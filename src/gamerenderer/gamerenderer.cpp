@@ -22,6 +22,9 @@ void GameRenderer::initialize() {
     getmaxyx(stdscr, height, width);  // Imposta larghezza e altezza
     check_terminal_size(width, height);
     render_border();
+
+    // Nota: nodelay non viene chiamato dunque all'inizio getch è bloccante!!
+    // Bisogna chiamare wait_for_btn almeno una volta per renderlo sbloccante (=> nodelay TRUE)
 }
 
 void GameRenderer::check_terminal_size(int width, int height) {
@@ -47,7 +50,6 @@ void GameRenderer::render_border() {
     mvaddch(0, TERMINAL_WIDTH - 1, ACS_URCORNER);
     mvaddch(TERMINAL_HEIGHT - 1, 0, ACS_LLCORNER);
     mvaddch(TERMINAL_HEIGHT - 1, TERMINAL_WIDTH - 1, ACS_LRCORNER);
-    refresh_screen();
 }
 
 void GameRenderer::render_player() {
@@ -72,17 +74,39 @@ Position GameRenderer::translate_position(Position position) const {
     return (Position){.x = position.x, .y = TERMINAL_HEIGHT - position.y};
 };
 
-void GameRenderer::render_str(Position position, const char* str) const {
-    mvprintw(position.y, position.x, str);
+void GameRenderer::render_str(Position _position, const char* str) const {
+    Position position = translate_position(_position);
+    mvprintw(position.y, position.x, "%s", str);
 };
+
+void GameRenderer::render_str_num(Position position, const char* str, int number) const {
+    render_str(position, str);
+    attron(COLOR_PAIR(4));  // Usiamo la coppia di colori per testo bianco su sfondo giallo
+    printw(" %d", number);
+    attroff(COLOR_PAIR(4));
+}
+
+void GameRenderer::wait_for_btn(int btn) {
+    nodelay(stdscr, FALSE);
+
+    while (true) {
+        int ch = getch();
+
+        if (ch == (int)btn) {
+            nodelay(stdscr, TRUE);
+            return;
+        }
+    }
+}
 
 void GameRenderer::render() {
     render_player();
     render_floor();
+    render_border();
     refresh_screen();
 }
 
-void GameRenderer::render_char_2darray(AsciiText text, Alignment h_align, Alignment v_align) {
+void GameRenderer::render_2d_char_array(AsciiText text, Alignment h_align, Alignment v_align) {
     clear_screen();
 
     int y = text.height - 1;
@@ -104,12 +128,22 @@ void GameRenderer::render_char_2darray(AsciiText text, Alignment h_align, Alignm
             y_pos = TERMINAL_HEIGHT - text.height;
         }
 
-        Position correct_pos = translate_position((Position){.x = x, .y = y_pos + text.height - y});
-        render_str(correct_pos, text.text[y--]);
+        render_str((Position){.x = x, .y = y_pos + text.height - y}, text.text[y--]);
 
         // std::cout << correct_pos.x << " - " << correct_pos.y << std::endl;
     }
 
     refresh_screen();
     render_border();
+}
+
+void GameRenderer::rectangle(Position pos1, Position pos2) {
+    mvhline(pos1.y, pos1.x, 0, pos2.x - pos1.x);
+    mvhline(pos2.y, pos1.x, 0, pos2.x - pos1.x);
+    mvvline(pos1.y, pos1.x, 0, pos2.y - pos1.y);
+    mvvline(pos1.y, pos2.x, 0, pos2.y - pos1.y);
+    mvaddch(pos1.y, pos1.x, ACS_ULCORNER);
+    mvaddch(pos2.y, pos1.x, ACS_LLCORNER);
+    mvaddch(pos1.y, pos2.x, ACS_URCORNER);
+    mvaddch(pos2.y, pos2.x, ACS_LRCORNER);
 }

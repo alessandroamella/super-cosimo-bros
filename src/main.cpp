@@ -8,8 +8,7 @@
 #include "player/player.hpp"
 
 int main() {
-    // Inizializzazione di NCurses e altre operazioni di avvio del gioco
-
+    // Istanzio classi del gioco
     GameTimer game_timer;
     InputManager input_manager;
 
@@ -17,18 +16,21 @@ int main() {
 
     GameRenderer game_renderer(player);
 
+    // Avvio timer, initializzo ncurses
     game_timer.start();
     game_renderer.initialize();
 
     bool quit = false;  // TODO debug
 
-    game_renderer.render_char_2darray(title, Alignment::Center, Alignment::Center);
+    game_renderer.render_2d_char_array(title, Alignment::Center, Alignment::Center);
+
+    game_renderer.wait_for_btn(' ');
+    game_renderer.clear_screen();
 
     // Inizio del ciclo di gioco
     while (!quit) {
-        // Chiamata a game_timer.tick() all'inizio di ogni tick
         if (game_timer.should_tick()) {
-            input_manager.process_input();
+            input_manager.read_input();
 
             game_timer.tick();
             player.tick();
@@ -37,6 +39,9 @@ int main() {
             game_timer.reset_accumulator();
 
             quit = input_manager.is_key_pressed('q');
+
+            // DEBUG PRINT
+            game_renderer.render_str_num((Position){.x = 0, .y = 1}, "TICKS", (int)game_timer.get_delta_time_sec());
         };
 
         game_timer.tick();

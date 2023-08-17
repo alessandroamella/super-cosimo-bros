@@ -5,9 +5,7 @@
 
 #include "../asciiart/asciitext.hpp"
 #include "../player/player.hpp"
-
-#define TERMINAL_WIDTH 130
-#define TERMINAL_HEIGHT 40
+#include "../shared/settings.hpp"
 
 class GameRenderer {
    private:
@@ -17,13 +15,10 @@ class GameRenderer {
     void render_border();
     void render_player();
     void render_floor();
-    void clear_screen();
     void refresh_screen();
     Position translate_position(Position position) const;
     void render_str(Position position, const char* str) const;
-
-    /** translate_coordinates: y=0 significa in alto => la y deve essere "mappata" al contrario */
-    /** render_char: wrapper di mvprintw */
+    void rectangle(Position pos1, Position pos2);
 
    public:
     GameRenderer(Player& player);
@@ -31,7 +26,10 @@ class GameRenderer {
 
     void initialize();
     void render();
-    void render_char_2darray(AsciiText text, Alignment h_align, Alignment v_align);
+    void render_2d_char_array(AsciiText text, Alignment h_align, Alignment v_align);
+    void render_str_num(Position position, const char* str, int number) const;
+    void wait_for_btn(int btn);
+    void clear_screen();
 };
 
 #endif  // _GAMERENDERER_HPP_

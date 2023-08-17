@@ -7,9 +7,7 @@
 #include "../inputmanager/inputmanager.hpp"
 #include "../list/list.hpp"
 #include "../shared/position.hpp"
-
-#define PLAYER_JUMP_VEL 2
-#define PLAYER_RENDER_CHARACTER "@"
+#include "../shared/settings.hpp"
 
 class Player {
    private:

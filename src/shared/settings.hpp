@@ -1,0 +1,10 @@
+#ifndef _SETTINGS_HPP_
+#define _SETTINGS_HPP_
+
+#define TERMINAL_WIDTH 130
+#define TERMINAL_HEIGHT 40
+
+#define PLAYER_JUMP_VEL 2
+#define PLAYER_RENDER_CHARACTER "@"
+
+#endif  // _SETTINGS_HPP_

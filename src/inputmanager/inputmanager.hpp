@@ -7,7 +7,7 @@ class InputManager {
    public:
     InputManager();
 
-    void process_input();
+    void read_input();
 
     bool is_key_pressed(int key) const;
 

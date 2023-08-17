@@ -6,9 +6,10 @@ InputManager::InputManager() {
     }
 }
 
-void InputManager::process_input() {
+void InputManager::read_input() {
     int ch = getch();
 
+    // if (ch == ERR) return;  // TODO! serve?
     // aggiorna lo stato dei tasti
     for (int i = 0; i < 256; ++i) {
         keys[i] = false;

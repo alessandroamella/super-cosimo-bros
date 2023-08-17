@@ -20,7 +20,6 @@ const char* title_text[] = {
     "                 |_|   |_|  \\___|_| |_| |_|_| |____/|_| /_/   \\_\\/____|___\\___/                   ",
 };
 
-/** 8x99 */
 AsciiText title = {
     .text = title_text,
     .height = 14,
