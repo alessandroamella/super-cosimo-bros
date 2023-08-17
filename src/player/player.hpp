@@ -5,24 +5,43 @@
 
 #include "../gametimer/gametimer.hpp"
 #include "../inputmanager/inputmanager.hpp"
+#include "../list/list.hpp"
+#include "../shared/position.hpp"
 
-#define PLAYER_JUMP_VEL 2;
-
-enum PlayerJumpPhase {
-    JUMP_UP_1 = 0,        // salta in alto 1^ volta
-    JUMP_UP_2 = 1,        // salta in alto 2^ volta
-    JUMP_STALL = 2,       // stallo a mezzaria
-    JUMP_DOWN_1 = 3,      // ricadi giù 1^ volta
-    JUMP_DOWN_2 = 4,      // ricadi giù 2^ volta
-    JUMP_PHASES_NUM = 5,  // tot fasi
-};
+#define PLAYER_JUMP_VEL 2
+#define PLAYER_RENDER_CHARACTER "@"
 
 class Player {
    private:
+    enum class PlayerJumpPhase {
+        Up1 = 0,    // salta in alto 1^ volta
+        Up2 = 1,    // salta in alto 2^ volta
+        Stall = 2,  // stallo a mezzaria
+        Down1 = 3,  // ricadi giù 1^ volta
+        Down2 = 4,  // ricadi giù 2^ volta
+    };
+    const short jumpPhasesNum = 5;
+
+    enum class PlayerAction {
+        Jump,
+        MoveLeft,
+        MoveRight,
+        Crouch,
+        Run,
+        Shoot
+    };
+
+    struct PlayerKeyBinding {
+        char key;
+        PlayerAction action;
+    };
+
+    List<PlayerKeyBinding> key_bindings;
+
     GameTimer& game_timer;
     InputManager& input_manager;
 
-    int x, y;
+    Position position;
 
     int vel_x;
     int vel_y;
@@ -35,11 +54,13 @@ class Player {
 
     PlayerJumpPhase jump_phase;
 
+    void initialize_keybindings();
     void update_jump_position();
     void process_input();
+    void handle_action(PlayerAction action);
 
    public:
-    Player(GameTimer& timer, InputManager& input_manager, int start_x, int start_y);
+    Player(GameTimer& timer, InputManager& input_manager, Position position);
 
     void move_left();
     void move_right();
@@ -59,9 +80,8 @@ class Player {
     void run();
     void shoot();
     void crouch();
-
     void tick();
-    void render();
+    Position get_position();
 };
 
 #endif  // _PLAYER_HPP_

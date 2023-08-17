@@ -17,6 +17,12 @@ class List {
 
    public:
     List();
+    Node* begin() const {
+        return head;
+    }
+    Node* end() const {
+        return nullptr;
+    }
     void push(T data);
     T pop(int index);
     T at(int index);
@@ -44,9 +50,9 @@ void List<T>::push(T data) {
 
 template <typename T>
 T List<T>::pop(int index) {
-    if (index < 0 || index >= size) {
+    if (index < 0 || index >= size)
         throw std::out_of_range("Index out of range");
-    }
+
     Node* current = head;
     if (index == 0) {
         head = head->next;
@@ -88,7 +94,8 @@ void List<T>::print() {
     std::cout << "[ ";
     for (size_t i = 0; i < size; i++) {
         std::cout << at(i);
-        if (i != size - 1) std::cout << ", ";
+        if (i != size - 1)
+            std::cout << ", ";
     }
     std::cout << " ]";
 }

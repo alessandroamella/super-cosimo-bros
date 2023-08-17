@@ -6,7 +6,6 @@
 class InputManager {
    public:
     InputManager();
-    ~InputManager();
 
     void process_input();
 
