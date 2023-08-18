@@ -5,6 +5,7 @@
 
 #include "../gametimer/gametimer.hpp"
 #include "../inputmanager/inputmanager.hpp"
+#include "../level/level.hpp"
 #include "../list/list.hpp"
 #include "../shared/position.hpp"
 #include "../shared/settings.hpp"
@@ -15,16 +16,14 @@ class Player {
         Up1 = 0,    // salta in alto 1^ volta
         Up2 = 1,    // salta in alto 2^ volta
         Stall = 2,  // stallo a mezzaria
-        Down1 = 3,  // ricadi giù 1^ volta
-        Down2 = 4,  // ricadi giù 2^ volta
+        // a cadere ci pensa la gravita'
     };
-    const short jumpPhasesNum = 5;
+    const short jumpPhasesNum = 3;
 
     enum class PlayerAction {
         Jump,
         MoveLeft,
         MoveRight,
-        Crouch,
         Run,
         Shoot
     };
@@ -38,6 +37,7 @@ class Player {
 
     GameTimer& game_timer;
     InputManager& input_manager;
+    Level& cur_level;
 
     Position position;
 
@@ -48,17 +48,19 @@ class Player {
 
     bool is_running;
     bool is_shooting;
-    bool is_crouching;
 
     PlayerJumpPhase jump_phase;
 
     void initialize_keybindings();
     void update_jump_position();
     void process_input();
-    void handle_action(PlayerAction action);
+    void handle_action(PlayerAction action, bool is_pressed);
+    void apply_gravity();
+    void move_based_on_speed();
+    void clamp_speed();
 
    public:
-    Player(GameTimer& timer, InputManager& input_manager, Position position);
+    Player(GameTimer& timer, InputManager& input_manager, Level& cur_level, Position position);
 
     void move_left();
     void move_right();
@@ -75,11 +77,15 @@ class Player {
      * internamente dal metodo `update_jump_position`
      */
     void jump();
-    void run();
+    void start_running();
+    void stop_running();
     void shoot();
-    void crouch();
     void tick();
     Position get_position();
+
+    // TODO finito il debug, sposta in private
+    bool is_on_floor();
+    bool is_touching_ceiling();
 };
 
 #endif  // _PLAYER_HPP_

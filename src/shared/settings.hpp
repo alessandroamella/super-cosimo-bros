@@ -1,8 +1,8 @@
 #ifndef _SETTINGS_HPP_
 #define _SETTINGS_HPP_
 
-#define TERMINAL_WIDTH 130
-#define TERMINAL_HEIGHT 40
+#define GAME_WIDTH 130
+#define GAME_HEIGHT 40
 
 #define PLAYER_JUMP_VEL 2
 #define PLAYER_RENDER_CHARACTER "@"

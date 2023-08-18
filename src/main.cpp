@@ -3,18 +3,36 @@
 #include "asciiart/texts.hpp"
 #include "gamerenderer/gamerenderer.hpp"
 #include "gametimer/gametimer.hpp"
+#include "level/level.hpp"
 #include "list/list.hpp"
 #include "list/list2d.hpp"
 #include "player/player.hpp"
+#include "room/room.hpp"
 
 int main() {
     // Istanzio classi del gioco
     GameTimer game_timer;
     InputManager input_manager;
 
-    Player player(game_timer, input_manager, (Position){.x = 10, .y = 10});
+    int floor[GAME_WIDTH];
+    for (int i = 0; i < GAME_WIDTH - 100; i++) {
+        floor[i] = 2;
+    }
+    for (int i = GAME_WIDTH - 100; i < GAME_WIDTH - 30; i++) {
+        floor[i] = 5;
+    }
+    for (int i = GAME_WIDTH - 30; i < GAME_WIDTH; i++) {
+        floor[i] = 10;
+    }
+    Room test_room(floor);
 
-    GameRenderer game_renderer(player);
+    List<Room> rooms;
+    rooms.push(test_room);
+    Level level(rooms, "ciaone");
+
+    Player player(game_timer, input_manager, level, (Position){.x = 10, .y = 10});
+
+    GameRenderer game_renderer(player, level, game_timer);
 
     // Avvio timer, initializzo ncurses
     game_timer.start();

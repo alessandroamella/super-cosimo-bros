@@ -1,9 +1,7 @@
 #include "functions.hpp"
 
-int max(int a, int b) {
-    return (a > b) ? a : b;
-}
+#include <iostream>
 
-int min(int a, int b) {
-    return (a < b) ? a : b;
+int clamp(int n, int lower, int upper) {
+    return std::max(lower, std::min(n, upper));
 }
