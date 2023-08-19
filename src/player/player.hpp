@@ -20,50 +20,35 @@ class Player {
     };
     const short jumpPhasesNum = 3;
 
-    enum class PlayerAction {
-        Jump,
-        MoveLeft,
-        MoveRight,
-        Run,
-        Shoot
-    };
-
-    struct PlayerKeyBinding {
-        char key;
-        PlayerAction action;
-    };
-
-    List<PlayerKeyBinding> key_bindings;
-
     GameTimer& game_timer;
     InputManager& input_manager;
-    Level& cur_level;
 
-    Position position;
+    enum class PlayerControls {
+        Jump = (int)' ',
+        WalkLeft = (int)'a',
+        WalkRight = (int)'d',
+        RunLeft = 1,   // CTRL + A = 1
+        RunRight = 4,  // CTRL + S = 4
+        Shoot = (int)'e'
+    };
 
-    int vel_x;
-    int vel_y;
-
-    bool is_jumping;
-
-    bool is_running;
-    bool is_shooting;
-
-    PlayerJumpPhase jump_phase;
-
-    void initialize_keybindings();
     void update_jump_position();
     void process_input();
-    void handle_action(PlayerAction action, bool is_pressed);
     void apply_gravity();
     void move_based_on_speed();
     void clamp_speed();
 
-   public:
-    Player(GameTimer& timer, InputManager& input_manager, Level& cur_level, Position position);
-
     void move_left();
     void move_right();
+    void stop_moving();
+    void run_left();
+    void run_right();
+    void jump();
+    void shoot();
+    void clamp_position();
+
+   public:
+    Player(GameTimer& timer, InputManager& input_manager, Level& cur_level, Position position);
 
     /**
      * Inizia un salto del giocatore
@@ -76,16 +61,23 @@ class Player {
      * L'incremento della fase e la modifica della posizione sono gestite
      * internamente dal metodo `update_jump_position`
      */
-    void jump();
-    void start_running();
-    void stop_running();
-    void shoot();
-    void tick();
     Position get_position();
+    Position get_last_position();
+    void tick();
 
     // TODO finito il debug, sposta in private
     bool is_on_floor();
     bool is_touching_ceiling();
+    bool has_wall_on_left();
+    bool has_wall_on_right();
+    int vel_x;
+    int vel_y;
+    Position last_position;
+    Position position;
+    bool is_jumping;
+    bool is_shooting;
+    PlayerJumpPhase jump_phase;
+    Level& cur_level;
 };
 
 #endif  // _PLAYER_HPP_

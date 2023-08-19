@@ -15,13 +15,10 @@ int main() {
     InputManager input_manager;
 
     int floor[GAME_WIDTH];
-    for (int i = 0; i < GAME_WIDTH - 100; i++) {
+    for (int i = 0; i < GAME_WIDTH - 20; i++) {
         floor[i] = 2;
     }
-    for (int i = GAME_WIDTH - 100; i < GAME_WIDTH - 30; i++) {
-        floor[i] = 5;
-    }
-    for (int i = GAME_WIDTH - 30; i < GAME_WIDTH; i++) {
+    for (int i = GAME_WIDTH - 20; i < GAME_WIDTH; i++) {
         floor[i] = 10;
     }
     Room test_room(floor);
@@ -32,7 +29,7 @@ int main() {
 
     Player player(game_timer, input_manager, level, (Position){.x = 10, .y = 10});
 
-    GameRenderer game_renderer(player, level, game_timer);
+    GameRenderer game_renderer(player, level, game_timer, input_manager);
 
     // Avvio timer, initializzo ncurses
     game_timer.start();
@@ -56,10 +53,7 @@ int main() {
 
             game_timer.reset_accumulator();
 
-            quit = input_manager.is_key_pressed('q');
-
-            // DEBUG PRINT
-            game_renderer.render_str_num((Position){.x = 0, .y = 1}, "TICKS", (int)game_timer.get_delta_time_sec());
+            quit = input_manager.is_key_pressed(QUIT_KEY);
         };
 
         game_timer.tick();

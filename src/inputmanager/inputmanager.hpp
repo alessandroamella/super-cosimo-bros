@@ -3,6 +3,8 @@
 
 #include <ncurses.h>
 
+#define KEYS_ARR_LEN 128
+
 class InputManager {
    public:
     InputManager();
@@ -12,7 +14,7 @@ class InputManager {
     bool is_key_pressed(int key) const;
 
    private:
-    bool keys[256];  // Array per tenere traccia dei tasti premuti
+    bool keys[KEYS_ARR_LEN];  // Array per tenere traccia dei tasti premuti
 };
 
 #endif  // _INPUTMANAGER_HPP_

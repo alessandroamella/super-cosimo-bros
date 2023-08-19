@@ -5,6 +5,7 @@
 
 #include "../asciiart/asciitext.hpp"
 #include "../gametimer/gametimer.hpp"
+#include "../inputmanager/inputmanager.hpp"
 #include "../player/player.hpp"
 #include "../shared/settings.hpp"
 
@@ -13,6 +14,7 @@ class GameRenderer {
     Player& player;
     Level& cur_level;
     GameTimer& game_timer;
+    InputManager& input_manager;
 
     void check_terminal_size(int width, int height);
     void render_border();
@@ -28,7 +30,7 @@ class GameRenderer {
     void render_player_stats();
 
    public:
-    GameRenderer(Player& player, Level& cur_level, GameTimer& timer);
+    GameRenderer(Player& player, Level& cur_level, GameTimer& timer, InputManager& input_manager);
     ~GameRenderer();
 
     void initialize();

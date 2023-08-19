@@ -4,6 +4,8 @@
 #define GAME_WIDTH 130
 #define GAME_HEIGHT 40
 
+#define QUIT_KEY 'q'
+
 #define PLAYER_JUMP_VEL 2
 #define PLAYER_RENDER_CHARACTER "@"
 
