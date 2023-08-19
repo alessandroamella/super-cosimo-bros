@@ -19,10 +19,6 @@ bool GameTimer::should_tick() const {
     return time_accumulator >= tick_interval;
 }
 
-void GameTimer::reset_accumulator() {
-    time_accumulator = 0.0f;
-}
+void GameTimer::reset_accumulator() { time_accumulator = 0.0f; }
 
-float GameTimer::get_delta_time_sec() const {
-    return delta_time * 10000000.0f;
-}
+float GameTimer::get_delta_time_sec() const { return delta_time * 10000000.0f; }

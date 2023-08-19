@@ -3,7 +3,7 @@
 #include "asciiart/texts.hpp"
 #include "gamerenderer/gamerenderer.hpp"
 #include "gametimer/gametimer.hpp"
-#include "level/level.hpp"
+#include "level/levelmanager.hpp"
 #include "list/list.hpp"
 #include "list/list2d.hpp"
 #include "player/player.hpp"
@@ -15,8 +15,11 @@ int main() {
     InputManager input_manager;
 
     int floor[GAME_WIDTH];
-    for (int i = 0; i < GAME_WIDTH - 20; i++) {
+    for (int i = 0; i < GAME_WIDTH - 50; i++) {
         floor[i] = 2;
+    }
+    for (int i = GAME_WIDTH - 50; i < GAME_WIDTH - 20; i++) {
+        floor[i] = 5;
     }
     for (int i = GAME_WIDTH - 20; i < GAME_WIDTH; i++) {
         floor[i] = 10;
@@ -27,7 +30,8 @@ int main() {
     rooms.push(test_room);
     Level level(rooms, "ciaone");
 
-    Player player(game_timer, input_manager, level, (Position){.x = 10, .y = 10});
+    Player player(game_timer, input_manager, level,
+                  (Position){.x = 10, .y = 10});
 
     GameRenderer game_renderer(player, level, game_timer, input_manager);
 
@@ -37,7 +41,8 @@ int main() {
 
     bool quit = false;  // TODO debug
 
-    game_renderer.render_2d_char_array(title, Alignment::Center, Alignment::Center);
+    game_renderer.render_2d_char_array(title, Alignment::Center,
+                                       Alignment::Center);
 
     game_renderer.wait_for_btn(' ');
     game_renderer.clear_screen();
@@ -58,9 +63,6 @@ int main() {
 
         game_timer.tick();
     }
-
-    // Pulizia e chiusura del gioco
-    // ...
 
     return 0;
 }

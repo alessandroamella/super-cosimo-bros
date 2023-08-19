@@ -2,7 +2,7 @@
 #define _SETTINGS_HPP_
 
 #define GAME_WIDTH 130
-#define GAME_HEIGHT 40
+#define GAME_HEIGHT 38
 
 #define QUIT_KEY 'q'
 

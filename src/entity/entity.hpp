@@ -1,5 +1,5 @@
-#ifndef _PLAYER_HPP_
-#define _PLAYER_HPP_
+#ifndef _ENTITY_HPP_
+#define _ENTITY_HPP_
 
 #include <ncurses.h>
 
@@ -10,30 +10,10 @@
 #include "../shared/position.hpp"
 #include "../shared/settings.hpp"
 
-class Player {
+class Entity {
    private:
-    enum class PlayerJumpPhase {
-        Up1 = 0,    // salta in alto 1^ volta
-        Up2 = 1,    // salta in alto 2^ volta
-        Stall = 2,  // stallo a mezzaria
-        // a cadere ci pensa la gravita'
-    };
-    const short jumpPhasesNum = 3;
-
     GameTimer& game_timer;
-    InputManager& input_manager;
 
-    enum class PlayerControls {
-        Jump = (int)' ',
-        WalkLeft = (int)'a',
-        WalkRight = (int)'d',
-        RunLeft = 1,   // CTRL + A = 1
-        RunRight = 4,  // CTRL + S = 4
-        Shoot = (int)'e'
-    };
-
-    void update_jump_position();
-    void process_input();
     void apply_gravity();
     void move_based_on_speed();
     void clamp_speed();
@@ -43,14 +23,13 @@ class Player {
     void stop_moving();
     void run_left();
     void run_right();
-    void jump();
     void shoot();
     void clamp_position();
 
     int health;
 
    public:
-    Player(GameTimer& timer, InputManager& input_manager, Level& cur_level,
+    Entity(GameTimer& timer, InputManager& input_manager, Level& cur_level,
            Position position);
 
     /**
@@ -83,4 +62,4 @@ class Player {
     Level& cur_level;
 };
 
-#endif  // _PLAYER_HPP_
+#endif  // _ENTITY_HPP_

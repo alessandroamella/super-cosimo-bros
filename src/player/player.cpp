@@ -5,24 +5,26 @@
 
 #include "../shared/functions.hpp"
 
-Player::Player(GameTimer& timer, InputManager& input_manager, Level& cur_level, Position position) : game_timer(timer), input_manager(input_manager), cur_level(cur_level), position(position), last_position(position), vel_x(0), vel_y(0), is_jumping(false), is_shooting(false) {
-}
+Player::Player(GameTimer& timer, InputManager& input_manager, Level& cur_level,
+               Position position)
+    : game_timer(timer),
+      input_manager(input_manager),
+      cur_level(cur_level),
+      position(position),
+      last_position(position),
+      vel_x(0),
+      vel_y(0),
+      is_jumping(false),
+      is_shooting(false),
+      health(100) {}
 
-void Player::move_left() {
-    vel_x = -1;
-}
+void Player::move_left() { vel_x = -3; }
 
-void Player::move_right() {
-    vel_x = 1;
-}
+void Player::move_right() { vel_x = 3; }
 
-void Player::run_left() {
-    vel_x = -2;
-}
+void Player::run_left() { vel_x = -5; }
 
-void Player::run_right() {
-    vel_x = 2;
-}
+void Player::run_right() { vel_x = 5; }
 
 void Player::jump() {
     if (!is_jumping) {
@@ -53,7 +55,8 @@ void Player::update_jump_position() {
 }
 
 void Player::process_input() {
-    if (input_manager.is_key_pressed((int)PlayerControls::Jump) && is_on_floor())
+    if (input_manager.is_key_pressed((int)PlayerControls::Jump) &&
+        is_on_floor())
         jump();
 
     if (input_manager.is_key_pressed((int)PlayerControls::RunLeft))
@@ -67,16 +70,19 @@ void Player::process_input() {
     else
         stop_moving();
 
-    if (input_manager.is_key_pressed((int)PlayerControls::Shoot))
-        shoot();
+    if (input_manager.is_key_pressed((int)PlayerControls::Shoot)) shoot();
 
     // for (int i = 0; i < key_bindings.length(); i++) {
-    //     handle_action(key_bindings.at(i).action, input_manager.is_key_pressed(key_bindings.at(i).key));
+    //     handle_action(key_bindings.at(i).action,
+    //     input_manager.is_key_pressed(key_bindings.at(i).key));
     // }
 }
 
 void Player::stop_moving() {
-    vel_x = 0;
+    if (vel_x > 0)
+        vel_x--;
+    else if (vel_x < 0)
+        vel_x++;
 }
 
 void Player::shoot() {
@@ -95,17 +101,20 @@ bool Player::is_on_floor() {
 }
 
 bool Player::is_touching_ceiling() {
-    return position.y - 1 >= cur_level.get_cur_room().get_ceiling_at(position.x);
+    return position.y - 1 >=
+           cur_level.get_cur_room().get_ceiling_at(position.x);
 }
 
 bool Player::has_wall_on_left() {
     // TODO < o <= 1?
-    return position.x <= 1 || cur_level.get_cur_room().get_floor_at(position.x - 1) > position.y;
+    return position.x <= 1 ||
+           cur_level.get_cur_room().get_floor_at(position.x - 1) > position.y;
 }
 
 bool Player::has_wall_on_right() {
     // TODO < o <= 1?
-    return position.x >= GAME_WIDTH || position.y < cur_level.get_cur_room().get_floor_at(position.x + 1);
+    return position.x >= GAME_WIDTH ||
+           position.y < cur_level.get_cur_room().get_floor_at(position.x + 1);
 }
 
 void Player::clamp_position() {
@@ -116,7 +125,8 @@ void Player::clamp_position() {
         position.x = GAME_WIDTH - 1;
 
     // y
-    position.y = std::max(position.y, cur_level.get_cur_room().get_floor_at(position.x) + 2);
+    position.y = std::max(
+        position.y, cur_level.get_cur_room().get_floor_at(position.x) + 2);
 }
 
 void Player::apply_gravity() {
@@ -126,8 +136,7 @@ void Player::apply_gravity() {
         vel_y--;
 
     // se tocca il soffitto, la vel_y deve essere <= 0
-    if (is_touching_ceiling())
-        vel_y = clamp(vel_y, vel_y, 0);
+    if (is_touching_ceiling()) vel_y = clamp(vel_y, vel_y, 0);
 };
 
 void Player::move_based_on_speed() {
@@ -142,17 +151,14 @@ void Player::tick() {
 
     process_input();
     apply_gravity();
-    clamp_speed();  // TODO clampa la velocità (se is_on_floor o is_touching_ceiling ad esempio)!
+    clamp_speed();  // TODO clampa la velocità (se is_on_floor o
+                    // is_touching_ceiling ad esempio)!
     clamp_position();
     move_based_on_speed();
 
     last_position = cur_pos;
 }
 
-Position Player::get_last_position() {
-    return last_position;
-}
+Position Player::get_last_position() { return last_position; }
 
-Position Player::get_position() {
-    return position;
-}
+Position Player::get_position() { return position; }

@@ -2,8 +2,30 @@
     "tasks": [
         {
             "type": "shell",
+            "label": "Create build folder if doesn't exist",
+            "command": "mkdir",
+            "args": ["-p"],
+            "options": {
+                "cwd": "${workspaceFolder}/build" // Build result directory
+            }
+        },
+        {
+            "type": "shell",
             "label": "Create build with debug symbols",
-            "command": "/usr/bin/cmake",
+            // "command": "/usr/bin/cmake",
+            "command": "cmake",
+            "args": [
+                "-DCMAKE_BUILD_TYPE=Debug",
+                ".." // CMakeLists.txt location
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build" // Build result directory
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Create build with debug symbols",
+            "command": "cmake",
             "args": [
                 "-DCMAKE_BUILD_TYPE=Debug",
                 ".." // CMakeLists.txt location
@@ -15,7 +37,7 @@
         {
             "type": "shell",
             "label": "Launch cmake build",
-            "command": "/usr/bin/cmake",
+            "command": "cmake",
             "args": [
                 "--build",
                 "." // Build cache directory
