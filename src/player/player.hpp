@@ -5,7 +5,7 @@
 
 #include "../gametimer/gametimer.hpp"
 #include "../inputmanager/inputmanager.hpp"
-#include "../level/levelmanager.hpp"
+#include "../levelmanager/levelmanager.hpp"
 #include "../list/list.hpp"
 #include "../shared/position.hpp"
 #include "../shared/settings.hpp"
@@ -50,7 +50,7 @@ class Player {
     int health;
 
    public:
-    Player(GameTimer& timer, InputManager& input_manager, Level& cur_level,
+    Player(GameTimer& timer, InputManager& input_manager, LevelManager& cur_level,
            Position position);
 
     /**
@@ -80,7 +80,7 @@ class Player {
     bool is_jumping;
     bool is_shooting;
     PlayerJumpPhase jump_phase;
-    Level& cur_level;
+    LevelManager& cur_level;
 };
 
 #endif  // _PLAYER_HPP_

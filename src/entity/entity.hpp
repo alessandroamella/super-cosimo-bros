@@ -5,7 +5,7 @@
 
 #include "../gametimer/gametimer.hpp"
 #include "../inputmanager/inputmanager.hpp"
-#include "../level/levelmanager.hpp"
+#include "../levelmanager/levelmanager.hpp"
 #include "../list/list.hpp"
 #include "../shared/position.hpp"
 #include "../shared/settings.hpp"
@@ -29,8 +29,8 @@ class Entity {
     int health;
 
    public:
-    Entity(GameTimer& timer, InputManager& input_manager, Level& cur_level,
-           Position position);
+    Entity(GameTimer& timer, InputManager& input_manager,
+           LevelManager& cur_level, Position position);
 
     /**
      * Inizia un salto del giocatore
@@ -59,7 +59,7 @@ class Entity {
     bool is_jumping;
     bool is_shooting;
     PlayerJumpPhase jump_phase;
-    Level& cur_level;
+    LevelManager& cur_level;
 };
 
 #endif  // _ENTITY_HPP_

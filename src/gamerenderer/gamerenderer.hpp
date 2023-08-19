@@ -12,7 +12,7 @@
 class GameRenderer {
    private:
     Player& player;
-    Level& cur_level;
+    LevelManager& cur_level;
     GameTimer& game_timer;
     InputManager& input_manager;
 
@@ -30,12 +30,14 @@ class GameRenderer {
     void render_player_stats();
 
    public:
-    GameRenderer(Player& player, Level& cur_level, GameTimer& timer, InputManager& input_manager);
+    GameRenderer(Player& player, LevelManager& cur_level, GameTimer& timer,
+                 InputManager& input_manager);
     ~GameRenderer();
 
     void initialize();
     void render();
-    void render_2d_char_array(AsciiText text, Alignment h_align, Alignment v_align);
+    void render_2d_char_array(AsciiText text, Alignment h_align,
+                              Alignment v_align);
     void render_str_num(Position position, const char* str, int number) const;
     void wait_for_btn(int btn);
     void clear_screen();
