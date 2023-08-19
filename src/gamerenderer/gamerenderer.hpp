@@ -27,17 +27,15 @@ class GameRenderer {
     void rectangle(Position pos1, Position pos2);
     void draw_floor();
     void draw_vertical_line(int start_y, int end_y, int x);
-    void render_player_stats();
+    void render_debug_status();
 
    public:
-    GameRenderer(Player& player, LevelManager& cur_level, GameTimer& timer,
-                 InputManager& input_manager);
+    GameRenderer(Player& player, LevelManager& cur_level, GameTimer& timer, InputManager& input_manager);
     ~GameRenderer();
 
     void initialize();
     void render();
-    void render_2d_char_array(AsciiText text, Alignment h_align,
-                              Alignment v_align);
+    void render_2d_char_array(AsciiText text, Alignment h_align, Alignment v_align);
     void render_str_num(Position position, const char* str, int number) const;
     void wait_for_btn(int btn);
     void clear_screen();

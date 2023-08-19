@@ -10,10 +10,10 @@
 #include "room/room.hpp"
 
 int main() {
-    // Istanzio classi del gioco
-    GameTimer game_timer;
+    GameTimer game_timer(TICK_INTERVAL);
     InputManager input_manager;
 
+    // Test level
     List<int> floor;
     for (int i = 0; i < GAME_WIDTH - 50; i++) {
         floor.push(2);
@@ -22,46 +22,37 @@ int main() {
         floor.push(5);
     }
     for (int i = GAME_WIDTH - 20; i < GAME_WIDTH; i++) {
-        floor.push(10);
+        floor.push(7);
     }
-    Room test_room(floor);
+    Room test_room(floor, GAME_WIDTH, GAME_HEIGHT);
 
     List<Room> rooms;
     rooms.push(test_room);
+
     LevelManager level(rooms);
-
-    Player player(game_timer, input_manager, level,
-                  (Position){.x = 10, .y = 10});
-
+    Player player(game_timer, input_manager, level, (Position){.x = 10, .y = 10});
     GameRenderer game_renderer(player, level, game_timer, input_manager);
 
-    // Avvio timer, initializzo ncurses
     game_timer.start();
     game_renderer.initialize();
 
     bool quit = false;  // TODO debug
 
-    game_renderer.render_2d_char_array(title, Alignment::Center,
-                                       Alignment::Center);
+    game_renderer.render_2d_char_array(title, Alignment::Center, Alignment::Center);
 
     game_renderer.wait_for_btn(' ');
     game_renderer.clear_screen();
 
-    // Inizio del ciclo di gioco
     while (!quit) {
-        if (game_timer.should_tick()) {
-            input_manager.read_input();
+        input_manager.read_input();
 
-            game_timer.tick();
+        if (game_timer.should_tick()) {
             player.tick();
             game_renderer.render();
 
-            game_timer.reset_accumulator();
-
             quit = input_manager.is_key_pressed(QUIT_KEY);
-        };
-
-        game_timer.tick();
+            input_manager.clear_input_buff();
+        }
     }
 
     return 0;

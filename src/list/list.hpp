@@ -14,24 +14,27 @@ class List {
     };
     Node* head;
     size_t size;
+    bool is_out_of_range(int index);
 
    public:
     List();
-    Node* begin() const {
-        return head;
-    }
-    Node* end() const {
-        return nullptr;
-    }
+    Node* begin() const { return head; }
+    Node* end() const { return nullptr; }
     void push(T data);
     T pop(int index);
     T at(int index);
+    void set(int index, T data);
     size_t length();
     void print();
 };
 
 template <typename T>
 List<T>::List() : head(nullptr), size(0) {}
+
+template <typename T>
+bool List<T>::is_out_of_range(int index) {
+    return index < 0 || index >= size;
+}
 
 template <typename T>
 void List<T>::push(T data) {
@@ -50,8 +53,8 @@ void List<T>::push(T data) {
 
 template <typename T>
 T List<T>::pop(int index) {
-    if (index < 0 || index >= size)
-        throw std::out_of_range("Index out of range");
+    if (is_out_of_range(index))
+        throw std::out_of_range("pop: index out of range");
 
     Node* current = head;
     if (index == 0) {
@@ -74,14 +77,26 @@ T List<T>::pop(int index) {
 
 template <typename T>
 T List<T>::at(int index) {
-    if (index < 0 || index >= size) {
-        throw std::out_of_range("Index out of range");
-    }
+    if (is_out_of_range(index))
+        throw std::out_of_range("at: index out of range");
+
     Node* current = head;
     for (int i = 0; i < index; i++) {
         current = current->next;
     }
     return current->data;
+}
+
+template <typename T>
+void List<T>::set(int index, T data) {
+    if (is_out_of_range(index))
+        throw std::out_of_range("set: index out of range");
+
+    Node* current = head;
+    for (int i = 0; i < index; i++) {
+        current = current->next;
+    }
+    current->data = data;
 }
 
 template <typename T>

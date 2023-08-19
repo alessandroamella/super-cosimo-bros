@@ -14,4 +14,6 @@ bool LevelManager::is_last_room() {
     return cur_room_index == rooms.length() - 1;
 }
 
-Room LevelManager::get_cur_room() { return rooms.at(cur_room_index); }
+Room LevelManager::get_cur_room() {
+    return rooms.at(cur_room_index);
+}

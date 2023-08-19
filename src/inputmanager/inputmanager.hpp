@@ -8,13 +8,13 @@
 class InputManager {
    public:
     InputManager();
-
     void read_input();
-
+    void clear_input_buff();
     bool is_key_pressed(int key) const;
+    char get_last_ch();
 
    private:
-    bool keys[KEYS_ARR_LEN];  // Array per tenere traccia dei tasti premuti
+    int last_ch;
 };
 
 #endif  // _INPUTMANAGER_HPP_

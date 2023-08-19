@@ -1,35 +1,26 @@
 #include "inputmanager.hpp"
-
-#include <iostream>  // TODO debug
-
 #include "../shared/functions.hpp"
 
-InputManager::InputManager() {
-    for (int i = 0; i < KEYS_ARR_LEN; ++i) {
-        keys[i] = false;
-    }
-}
+InputManager::InputManager()
+    : last_ch(ERR) {}
 
-int last_ch = -1;
 void InputManager::read_input() {
     int ch = getch();
 
-    if (ch != ERR && !is_in(ch, 0, KEYS_ARR_LEN - 1))
-        return;
+    // mvprintw(1, 25, "CHAR: %c  ", (int)ch);
 
-    // aggiorna lo stato dei tasti
-    if (last_ch == -1 || ch != last_ch) {
-        for (int i = 0; i < KEYS_ARR_LEN; i++) {
-            keys[i] = false;
-        }
-    }
+    if (is_in(ch, 0, KEYS_ARR_LEN - 1))
+        last_ch = ch;
+}
 
-    if (ch != ERR)
-        keys[ch] = true;
-
-    last_ch = ch;
+void InputManager::clear_input_buff() {
+    last_ch = ERR;
 }
 
 bool InputManager::is_key_pressed(int key) const {
-    return keys[key];
+    return last_ch == key;
+}
+
+char InputManager::get_last_ch() {
+    return last_ch;
 }

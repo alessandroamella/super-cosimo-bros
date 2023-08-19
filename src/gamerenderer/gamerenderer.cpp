@@ -3,8 +3,10 @@
 #include <cstring>
 #include <iostream>
 
-GameRenderer::GameRenderer(Player& player, LevelManager& cur_level,
-                           GameTimer& timer, InputManager& input_manager)
+GameRenderer::GameRenderer(Player& player,
+                           LevelManager& cur_level,
+                           GameTimer& timer,
+                           InputManager& input_manager)
     : player(player),
       cur_level(cur_level),
       game_timer(timer),
@@ -16,13 +18,13 @@ GameRenderer::~GameRenderer() {
 
 void GameRenderer::initialize() {
     int width, height;
-    initscr();             // Inizializza la finestra ncurses
-    timeout(-1);           // Disabilita timeout di getch
-    cbreak();              // Disabilita il buffering del tasto Invio
-    raw();                 // Disabilita il buffer di input line-by-line
-    keypad(stdscr, TRUE);  // Abilita la lettura dei tasti speciali
-    noecho();              // Non mostrare l'input utente
-    curs_set(0);           // Nascondi il cursore
+    initscr();                        // Inizializza la finestra ncurses
+    timeout(-1);                      // Disabilita timeout di getch
+    cbreak();                         // Disabilita il buffering del tasto Invio
+    raw();                            // Disabilita il buffer di input line-by-line
+    keypad(stdscr, TRUE);             // Abilita la lettura dei tasti speciali
+    noecho();                         // Non mostrare l'input utente
+    curs_set(0);                      // Nascondi il cursore
     getmaxyx(stdscr, height, width);  // Imposta larghezza e altezza
     check_terminal_size(width, height);
     render_border();
@@ -60,8 +62,12 @@ void GameRenderer::render_border() {
 }
 
 void GameRenderer::render_player() {
-    render_str(player.get_last_position(), " ");  // cancello vecchio player
-    render_str(player.get_position(), PLAYER_RENDER_CHARACTER);
+    Position player_pos = player.get_position();
+    Position last_player_pos = player.get_last_position();
+
+    // cancello vecchio player
+    render_str(last_player_pos, " ");
+    render_str(player_pos, PLAYER_RENDER_CHARACTER);
 }
 
 void GameRenderer::render_floor() {
@@ -70,11 +76,17 @@ void GameRenderer::render_floor() {
     }
 }
 
-void GameRenderer::clear_screen() { clear(); }
+void GameRenderer::clear_screen() {
+    clear();
+}
 
-void GameRenderer::refresh_screen() { refresh(); }
+void GameRenderer::refresh_screen() {
+    refresh();
+}
 
-int GameRenderer::translate_y(int y) const { return GAME_HEIGHT - y; };
+int GameRenderer::translate_y(int y) const {
+    return GAME_HEIGHT - y;
+};
 
 Position GameRenderer::translate_position(Position position) const {
     return (Position){.x = position.x, .y = GAME_HEIGHT - position.y};
@@ -85,7 +97,8 @@ void GameRenderer::render_str(Position _position, const char* str) const {
     mvprintw(position.y, position.x, "%s", str);
 };
 
-void GameRenderer::render_str_num(Position position, const char* str,
+void GameRenderer::render_str_num(Position position,
+                                  const char* str,
                                   int number) const {
     render_str(position, str);
     attron(COLOR_PAIR(4));
@@ -111,11 +124,12 @@ void GameRenderer::render() {
     render_floor();
     render_border();
     draw_floor();
-    render_player_stats();
+    render_debug_status();
     refresh_screen();
 }
 
-void GameRenderer::render_2d_char_array(AsciiText text, Alignment h_align,
+void GameRenderer::render_2d_char_array(AsciiText text,
+                                        Alignment h_align,
                                         Alignment v_align) {
     clear_screen();
 
@@ -160,13 +174,14 @@ void GameRenderer::rectangle(Position pos1, Position pos2) {
 }
 
 void GameRenderer::draw_floor() {
-    Position prev_native_pos = translate_position(
-        (Position){.x = 0, .y = cur_level.get_cur_room().get_floor_at(0)});
-    for (int i = 0; i < GAME_WIDTH; i++) {
+    Position prev_native_pos = translate_position((Position){.x = 0, .y = cur_level.get_cur_room().get_floor_at(0)});
+
+    for (int i = 0; i < cur_level.get_cur_room().get_width(); i++) {
         int cur_height = cur_level.get_cur_room().get_floor_at(i);
         int native_height = translate_y(cur_height);
 
-        if (native_height == prev_native_pos.y && i != GAME_WIDTH - 1) continue;
+        if (native_height == prev_native_pos.y && i != GAME_WIDTH - 1)
+            continue;
 
         // forse solo i - 1, documentazione di merda
         mvhline(prev_native_pos.y, prev_native_pos.x + 1, ACS_HLINE,
@@ -202,50 +217,28 @@ void GameRenderer::draw_vertical_line(int start_y, int end_y, int x) {
     }
 }
 
-void GameRenderer::render_player_stats() {
-    // render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 1}, "on_floor",
-    // (int)player.is_on_floor()); render_str_num((Position){.x = 15, .y =
-    // GAME_HEIGHT - 1}, "on_ceiling", (int)player.is_touching_ceiling());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 1}, "delta_time",
-                   (int)game_timer.get_delta_time_sec());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 2}, "w",
-                   (int)input_manager.is_key_pressed('w'));
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 3}, "a",
-                   (int)input_manager.is_key_pressed('a'));
-    render_str_num((Position){.x = 7, .y = GAME_HEIGHT - 2}, "s",
-                   (int)input_manager.is_key_pressed('s'));
-    render_str_num((Position){.x = 7, .y = GAME_HEIGHT - 3}, "d",
-                   (int)input_manager.is_key_pressed('d'));
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 4}, "rl",
-                   (int)input_manager.is_key_pressed(1));
-    render_str_num((Position){.x = 7, .y = GAME_HEIGHT - 4}, "rr",
-                   (int)input_manager.is_key_pressed(4));
+void GameRenderer::render_debug_status() {
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 1}, "last_tick", (int)(game_timer.last_tick_time.time_since_epoch() / std::chrono::milliseconds(1)));
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 2}, "last_char", (int)(input_manager.get_last_ch()));
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 3}, " w", (int)input_manager.is_key_pressed('w'));
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 4}, " a", (int)input_manager.is_key_pressed('a'));
+    render_str_num((Position){.x = 7, .y = GAME_HEIGHT - 3}, " s", (int)input_manager.is_key_pressed('s'));
+    render_str_num((Position){.x = 7, .y = GAME_HEIGHT - 4}, " d", (int)input_manager.is_key_pressed('d'));
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 5}, "rl", (int)input_manager.is_key_pressed(1));
+    render_str_num((Position){.x = 7, .y = GAME_HEIGHT - 5}, "rr", (int)input_manager.is_key_pressed(4));
 
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 9}, "is_on_floor",
-                   (int)player.is_on_floor());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 10},
-                   "is_touching_ceiling", (int)player.is_touching_ceiling());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 11},
-                   "has_wall_on_left", (int)player.has_wall_on_left());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 12},
-                   "has_wall_on_right", (int)player.has_wall_on_right());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 13}, "is_jumping",
-                   (int)player.is_jumping);
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 6}, "is_on_floor", (int)player.is_on_floor());
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 7}, "is_touching_ceiling", (int)player.is_touching_ceiling());
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 8}, "has_wall_on_left", (int)player.has_wall_on_left());
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 9}, "has_wall_on_right", (int)player.has_wall_on_right());
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 10}, "is_jumping", (int)player.is_jumping);
 
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 15}, "vel_x",
-                   (int)player.vel_x);
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 16}, "vel_y",
-                   (int)player.vel_y);
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 12}, "vel_x", (int)player.vel_x);
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 13}, "vel_y", (int)player.vel_y);
 
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 18}, "x",
-                   (int)player.position.x);
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 19}, "y",
-                   (int)player.position.y);
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 15}, "x", (int)player.get_position().x);
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 16}, "y", (int)player.get_position().y);
 
-    render_str_num(
-        (Position){.x = 2, .y = GAME_HEIGHT - 21}, "floor[x]",
-        (int)player.cur_level.get_cur_room().get_floor_at(player.position.x));
-    render_str_num(
-        (Position){.x = 2, .y = GAME_HEIGHT - 22}, "ceiling[x]",
-        (int)player.cur_level.get_cur_room().get_floor_at(player.position.x));
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 18}, "floor[x]", (int)player.cur_level.get_cur_room().get_floor_at(player.get_position().x));
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 19}, "ceiling[x]", (int)player.cur_level.get_cur_room().get_floor_at(player.get_position().x));
 }

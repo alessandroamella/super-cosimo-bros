@@ -1,23 +1,23 @@
-#ifndef _GAMETIMER_HPP_
-#define _GAMETIMER_HPP_
+#ifndef _GAME_TIMER_HPP_
+#define _GAME_TIMER_HPP_
 
 #include <chrono>
 
+#include <ncurses.h>
+#include <chrono>
+#include <iostream>
+
 class GameTimer {
-   public:
-    GameTimer();
-
-    void start();
-    void tick();
-    bool should_tick() const;
-    void reset_accumulator();
-    float get_delta_time_sec() const;
-
    private:
-    std::chrono::high_resolution_clock::time_point prev_time;
-    float delta_time;
-    const float tick_interval = 0.1f;  // ogni quanto deve fare tick
-    float time_accumulator;
+    float tick_interval;
+
+   public:
+    GameTimer(float tick_interval);
+    void start();
+    bool should_tick();
+
+    // TODO sposta in private dopo debug
+    std::chrono::time_point<std::chrono::high_resolution_clock> last_tick_time;
 };
 
-#endif  // _GAMETIMER_HPP_
+#endif  // _GAME_TIMER_HPP_

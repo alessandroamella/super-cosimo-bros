@@ -1,5 +1,5 @@
-#ifndef _LEVEL_HPP_
-#define _LEVEL_HPP_
+#ifndef _LEVELMANAGER_HPP_
+#define _LEVELMANAGER_HPP_
 
 #include "../list/list.hpp"
 #include "../room/room.hpp"
@@ -19,4 +19,4 @@ class LevelManager {
     size_t cur_room_index;
 };
 
-#endif  // _LEVEL_HPP_
+#endif  // _LEVELMANAGER_HPP_
