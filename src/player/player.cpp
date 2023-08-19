@@ -5,8 +5,8 @@
 
 #include "../shared/functions.hpp"
 
-Player::Player(GameTimer& timer, InputManager& input_manager, Level& cur_level,
-               Position position)
+Player::Player(GameTimer& timer, InputManager& input_manager,
+               LevelManager& cur_level, Position position)
     : game_timer(timer),
       input_manager(input_manager),
       cur_level(cur_level),

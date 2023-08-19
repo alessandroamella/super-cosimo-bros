@@ -3,8 +3,8 @@
 #include <cstring>
 #include <iostream>
 
-GameRenderer::GameRenderer(Player& player, Level& cur_level, GameTimer& timer,
-                           InputManager& input_manager)
+GameRenderer::GameRenderer(Player& player, LevelManager& cur_level,
+                           GameTimer& timer, InputManager& input_manager)
     : player(player),
       cur_level(cur_level),
       game_timer(timer),

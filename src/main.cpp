@@ -3,7 +3,7 @@
 #include "asciiart/texts.hpp"
 #include "gamerenderer/gamerenderer.hpp"
 #include "gametimer/gametimer.hpp"
-#include "level/levelmanager.hpp"
+#include "levelmanager/levelmanager.hpp"
 #include "list/list.hpp"
 #include "list/list2d.hpp"
 #include "player/player.hpp"
@@ -14,21 +14,21 @@ int main() {
     GameTimer game_timer;
     InputManager input_manager;
 
-    int floor[GAME_WIDTH];
+    List<int> floor;
     for (int i = 0; i < GAME_WIDTH - 50; i++) {
-        floor[i] = 2;
+        floor.push(2);
     }
     for (int i = GAME_WIDTH - 50; i < GAME_WIDTH - 20; i++) {
-        floor[i] = 5;
+        floor.push(5);
     }
     for (int i = GAME_WIDTH - 20; i < GAME_WIDTH; i++) {
-        floor[i] = 10;
+        floor.push(10);
     }
     Room test_room(floor);
 
     List<Room> rooms;
     rooms.push(test_room);
-    Level level(rooms, "ciaone");
+    LevelManager level(rooms);
 
     Player player(game_timer, input_manager, level,
                   (Position){.x = 10, .y = 10});

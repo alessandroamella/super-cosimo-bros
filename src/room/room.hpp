@@ -9,14 +9,13 @@
 
 class Room {
    public:
-    Room(Player& player, int floor[]);
+    Room(List<int> floor);
     void load();
     int get_floor_at(int x);
     int get_ceiling_at(int x);
 
    private:
     List<int> floor;
-    Player& player;
 
     List<Powerup> powerups;
     // List<Enemy> enemies;
