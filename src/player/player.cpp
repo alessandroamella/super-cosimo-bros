@@ -7,9 +7,10 @@
 
 Player::Player(GameTimer& timer,
                InputManager& input_manager,
-               LevelManager& cur_level,
-               Position position)
-    : RigidEntity(timer, cur_level, position),
+               Position position,
+               List<int> floor,
+               List<int> ceiling)
+    : RigidEntity(timer, position, floor, ceiling),
       input_manager(input_manager),
       is_jumping(false),
       is_shooting(false),
@@ -63,8 +64,8 @@ void Player::process_input() {
         run_right();
     else if (input_manager.is_key_pressed((int)PlayerControls::WalkRight))
         move_right();
-    else
-        stop_moving();
+    else if (!is_jumping)
+        apply_friction();
 
     if (input_manager.is_key_pressed((int)PlayerControls::Shoot))
         shoot();
@@ -89,6 +90,22 @@ void Player::apply_gravity() {
     if (is_touching_ceiling())
         vel_y = clamp(vel_y, vel_y, 0);
 };
+
+int Player::get_health() {
+    return health;
+}
+
+void Player::add_health(int amount) {
+    health = std::max(health + amount, PLAYER_MAX_HEALTH);
+}
+
+void Player::set_health(int amount) {
+    health = clamp(amount, 0, PLAYER_MAX_HEALTH);
+}
+
+void Player::remove_health(int amount) {
+    health = std::max(health - amount, 0);
+}
 
 void Player::tick() {
     Position cur_pos = position;

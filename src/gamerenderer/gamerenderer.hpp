@@ -6,6 +6,7 @@
 #include "../asciiart/asciitext.hpp"
 #include "../gametimer/gametimer.hpp"
 #include "../inputmanager/inputmanager.hpp"
+#include "../levelmanager/levelmanager.hpp"
 #include "../player/player.hpp"
 #include "../shared/settings.hpp"
 
@@ -19,6 +20,7 @@ class GameRenderer {
     void check_terminal_size(int width, int height);
     void render_border();
     void render_player();
+    void render_enemies();
     void render_floor();
     void refresh_screen();
     int translate_y(int y) const;

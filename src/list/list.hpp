@@ -22,7 +22,8 @@ class List {
     Node* end() const { return nullptr; }
     void push(T data);
     T pop(int index);
-    T at(int index);
+    T& at(int index);
+    bool contains(T data);
     void set(int index, T data);
     size_t length();
     void print();
@@ -76,7 +77,7 @@ T List<T>::pop(int index) {
 }
 
 template <typename T>
-T List<T>::at(int index) {
+T& List<T>::at(int index) {
     if (is_out_of_range(index))
         throw std::out_of_range("at: index out of range");
 
@@ -85,6 +86,17 @@ T List<T>::at(int index) {
         current = current->next;
     }
     return current->data;
+}
+
+template <typename T>
+bool List<T>::contains(T data) {
+    Node* current = head;
+    while (current != nullptr) {
+        if (current->data == data)
+            return true;
+        current = current->next;
+    }
+    return false;
 }
 
 template <typename T>

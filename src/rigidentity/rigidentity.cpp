@@ -1,29 +1,31 @@
 #include "rigidentity.hpp"
 
 #include <iostream>
-#include <string>  // TODO debug
 
 #include "../shared/functions.hpp"
 
 RigidEntity::RigidEntity(GameTimer& timer,
-                         LevelManager& cur_level,
-                         Position position)
+                         Position position,
+                         List<int> floor,
+                         List<int> ceiling)
     : StaticEntity(position),
       game_timer(timer),
-      cur_level(cur_level),
+      starting_position(position),
       last_position(position),
       vel_x(RIGIDBODY_STARTING_VEL_X),
-      vel_y(RIGIDBODY_STARTING_VEL_Y) {}
+      vel_y(RIGIDBODY_STARTING_VEL_Y),
+      floor(floor),
+      ceiling(ceiling) {}
 
 void RigidEntity::move_left() {
-    vel_x = -3;
+    vel_x = -PLAYER_WALK_VEL;
 }
 
 void RigidEntity::move_right() {
-    vel_x = 3;
+    vel_x = PLAYER_WALK_VEL;
 }
 
-void RigidEntity::stop_moving() {
+void RigidEntity::apply_friction() {
     if (vel_x > 0)
         vel_x--;
     else if (vel_x < 0)
@@ -31,38 +33,32 @@ void RigidEntity::stop_moving() {
 }
 
 bool RigidEntity::is_on_floor() {
-    return position.y - 1 <= cur_level.get_cur_room().get_floor_at(position.x);
+    return position.y - 1 <= floor.at(position.x);
 }
 
 bool RigidEntity::is_touching_ceiling() {
-    return position.y - 1 >=
-           cur_level.get_cur_room().get_ceiling_at(position.x);
+    return position.y - 1 >= ceiling.at(position.x);
 }
 
 bool RigidEntity::has_wall_on_left() {
-    // TODO < o <= 1?
-    return position.x < 1 ||
-           cur_level.get_cur_room().get_floor_at(position.x - 1) > position.y;
+    return position.x < 1 || floor.at(position.x - 1) > position.y + 1;
 }
 
 bool RigidEntity::has_wall_on_right() {
-    // TODO < o <= 1?
-    return position.x >= cur_level.get_cur_room().get_width() - 1 ||
-           position.y < cur_level.get_cur_room().get_floor_at(position.x);
+    return position.x >= GAME_WIDTH - 1 || position.y + 1 < floor.at(position.x);
 }
 
 void RigidEntity::clamp_position() {
-    while (has_wall_on_left() && vel_x < 0)
-        position.x++;
-    while (has_wall_on_right() && vel_x > 0)
-        position.x--;
+    while (position.x < GAME_WIDTH - 1 && (position.x < 1.0f || has_wall_on_left() && vel_x < 0))
+        position.x = (float)((int)position.x + 1);
+    while (position.x > 1 && (position.x > GAME_WIDTH - 1 || has_wall_on_right() && vel_x > 0))
+        position.x = (float)((int)position.x - 1);
 
     position.x = clamp(position.x, 1, GAME_WIDTH - 1);
     position.y = clamp(position.y, 1, GAME_HEIGHT - 1);
 
-    // TODO controlla se sul pavimento
     if (is_on_floor())
-        position.y = cur_level.get_cur_room().get_floor_at(position.x) + 1;
+        position.y = floor.at(position.x) + 1;
 }
 
 void RigidEntity::apply_gravity() {
@@ -89,6 +85,10 @@ void RigidEntity::clamp_velocity() {
         vel_x = 0;
     else if (has_wall_on_right() && vel_x > 0)
         vel_x = 0;
+}
+
+void RigidEntity::reset_position() {
+    position = starting_position;
 }
 
 void RigidEntity::tick() {

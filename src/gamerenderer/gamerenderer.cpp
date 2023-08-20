@@ -36,10 +36,11 @@ void GameRenderer::initialize() {
 
 void GameRenderer::check_terminal_size(int width, int height) {
     if (width < GAME_WIDTH || height < GAME_HEIGHT) {
-        std::cerr << "Terminal must be at least " << GAME_WIDTH << "x"
-                  << GAME_HEIGHT << " current size: " << width << "x" << height
-                  << std::endl;
-        exit(EXIT_FAILURE);
+        throw std::runtime_error("Terminal must be at least " +
+                                 std::to_string(GAME_WIDTH) + "x" +
+                                 std::to_string(GAME_HEIGHT) +
+                                 " current size: " + std::to_string(width) +
+                                 "x" + std::to_string(height));
     }
 }
 
@@ -68,6 +69,18 @@ void GameRenderer::render_player() {
     // cancello vecchio player
     render_str(last_player_pos, " ");
     render_str(player_pos, PLAYER_RENDER_CHARACTER);
+}
+
+void GameRenderer::render_enemies() {
+    for (int i = 0; i < cur_level.get_cur_room()->get_enemies().length(); i++) {
+        Enemy enemy = cur_level.get_cur_room()->get_enemies().at(i);
+        Position enemy_pos = enemy.get_position();
+        Position last_enemy_pos = enemy.get_last_position();
+
+        // cancello vecchio enemy
+        render_str(last_enemy_pos, " ");
+        render_str(enemy_pos, ENEMY_RENDER_CHARACTER);
+    }
 }
 
 void GameRenderer::render_floor() {
@@ -121,6 +134,7 @@ void GameRenderer::wait_for_btn(int btn) {
 
 void GameRenderer::render() {
     render_player();
+    render_enemies();
     render_floor();
     render_border();
     draw_floor();
@@ -174,10 +188,10 @@ void GameRenderer::rectangle(Position pos1, Position pos2) {
 }
 
 void GameRenderer::draw_floor() {
-    Position prev_native_pos = translate_position((Position){.x = 0, .y = cur_level.get_cur_room().get_floor_at(0)});
+    Position prev_native_pos = translate_position((Position){.x = 0, .y = cur_level.get_cur_room()->get_floor_at(0)});
 
-    for (int i = 0; i < cur_level.get_cur_room().get_width(); i++) {
-        int cur_height = cur_level.get_cur_room().get_floor_at(i);
+    for (int i = 0; i < cur_level.get_cur_room()->get_width(); i++) {
+        int cur_height = cur_level.get_cur_room()->get_floor_at(i);
         int native_height = translate_y(cur_height);
 
         if (native_height == prev_native_pos.y && i != GAME_WIDTH - 1)
@@ -239,6 +253,21 @@ void GameRenderer::render_debug_status() {
     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 15}, "x", (int)player.get_position().x);
     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 16}, "y", (int)player.get_position().y);
 
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 18}, "floor[x]", (int)player.cur_level.get_cur_room().get_floor_at(player.get_position().x));
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 19}, "ceiling[x]", (int)player.cur_level.get_cur_room().get_floor_at(player.get_position().x));
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 18}, "floor[x]", (int)cur_level.get_cur_room()->get_floor_at(player.get_position().x));
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 19}, "ceiling[x]", (int)cur_level.get_cur_room()->get_ceiling_at(player.get_position().x));
+
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 21}, "health", (int)player.get_health());
+
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 24}, "enemies", (int)cur_level.get_cur_room()->get_enemies().length());
+    for (int i = 0; i < cur_level.get_cur_room()->get_enemies().length(); i++) {
+        Enemy enemy = cur_level.get_cur_room()->get_enemies().at(i);
+        render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 25 - i}, "x", (int)enemy.get_position().x);
+        render_str_num((Position){.x = 8, .y = GAME_HEIGHT - 25 - i}, "y", (int)enemy.get_position().y);
+        render_str_num((Position){.x = 12, .y = GAME_HEIGHT - 25 - i}, "on_floor", (int)enemy.is_on_floor());
+        render_str_num((Position){.x = 23, .y = GAME_HEIGHT - 25 - i}, "touch_ceiling", (int)enemy.is_touching_ceiling());
+        render_str_num((Position){.x = 39, .y = GAME_HEIGHT - 25 - i}, "wall_left", (int)enemy.has_wall_on_left());
+        render_str_num((Position){.x = 51, .y = GAME_HEIGHT - 25 - i}, "wall_right", (int)enemy.has_wall_on_right());
+        render_str_num((Position){.x = 64, .y = GAME_HEIGHT - 25 - i}, "vel_x", (int)enemy.vel_x);
+        render_str_num((Position){.x = 72, .y = GAME_HEIGHT - 25 - i}, "vel_y", (int)enemy.vel_y);
+    }
 }

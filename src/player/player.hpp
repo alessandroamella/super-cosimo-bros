@@ -5,7 +5,6 @@
 
 #include "../gametimer/gametimer.hpp"
 #include "../inputmanager/inputmanager.hpp"
-#include "../levelmanager/levelmanager.hpp"
 #include "../list/list.hpp"
 #include "../rigidentity/rigidentity.hpp"
 #include "../shared/position.hpp"
@@ -31,12 +30,13 @@ class Player : public RigidEntity {
 
     InputManager& input_manager;
 
+    int health;
+
     void update_jump_position();
     void process_input();
 
     void run_left();
     void run_right();
-    void jump();
     void shoot();
 
     // overrides
@@ -45,13 +45,20 @@ class Player : public RigidEntity {
    public:
     Player(GameTimer& timer,
            InputManager& input_manager,
-           LevelManager& cur_level,
-           Position position);
+           Position position,
+           List<int> floor,
+           List<int> ceiling);
 
-    int health;
     bool is_jumping;
     bool is_shooting;
     PlayerJumpPhase jump_phase;
+
+    void jump();
+
+    int get_health();
+    void add_health(int amount);
+    void set_health(int amount);
+    void remove_health(int amount);
 
     // overrides
     void tick();
