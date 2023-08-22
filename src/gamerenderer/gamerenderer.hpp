@@ -21,14 +21,13 @@ class GameRenderer {
     void render_border();
     void render_player();
     void render_enemies();
+    void rectangle(Position pos1, Position pos2);
     void render_floor();
+    void render_platforms();
     void refresh_screen();
     int translate_y(int y) const;
     Position translate_position(Position position) const;
     void render_str(Position position, const char* str) const;
-    void rectangle(Position pos1, Position pos2);
-    void draw_floor();
-    void draw_vertical_line(int start_y, int end_y, int x);
     void render_debug_status();
 
    public:
@@ -36,7 +35,9 @@ class GameRenderer {
     ~GameRenderer();
 
     void initialize();
-    void render();
+
+    void render_all();
+
     void render_2d_char_array(AsciiText text, Alignment h_align, Alignment v_align);
     void render_str_num(Position position, const char* str, int number) const;
     void wait_for_btn(int btn);

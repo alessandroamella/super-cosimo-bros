@@ -11,6 +11,8 @@
 
 class RigidEntity : public StaticEntity {
    protected:
+    EntityType type;
+
     GameTimer& game_timer;
 
     List<int> floor;
@@ -31,6 +33,7 @@ class RigidEntity : public StaticEntity {
     RigidEntity(GameTimer& timer, Position position, List<int> floor, List<int> ceiling);
     Position get_last_position();
     void reset_position();
+    Position get_velocity();
     void tick();
 
     // TODO finito il debug, sposta in private

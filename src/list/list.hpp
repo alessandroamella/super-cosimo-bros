@@ -30,7 +30,8 @@ class List {
 };
 
 template <typename T>
-List<T>::List() : head(nullptr), size(0) {}
+List<T>::List()
+    : head(nullptr), size(0) {}
 
 template <typename T>
 bool List<T>::is_out_of_range(int index) {
@@ -78,6 +79,9 @@ T List<T>::pop(int index) {
 
 template <typename T>
 T& List<T>::at(int index) {
+    if (index < 0)
+        index = size + index;
+
     if (is_out_of_range(index))
         throw std::out_of_range("at: index out of range");
 

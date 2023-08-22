@@ -6,6 +6,7 @@
 #include "../gametimer/gametimer.hpp"
 #include "../inputmanager/inputmanager.hpp"
 #include "../list/list.hpp"
+#include "../platform/platform.hpp"
 #include "../rigidentity/rigidentity.hpp"
 #include "../shared/position.hpp"
 #include "../shared/settings.hpp"
@@ -30,10 +31,15 @@ class Player : public RigidEntity {
 
     InputManager& input_manager;
 
+    List<Platform>& platforms;
+
     int health;
 
     void update_jump_position();
     void process_input();
+
+    void clamp_speed_based_on_platforms();
+    void clamp_speed_based_on_walls();
 
     void run_left();
     void run_right();
@@ -47,7 +53,8 @@ class Player : public RigidEntity {
            InputManager& input_manager,
            Position position,
            List<int> floor,
-           List<int> ceiling);
+           List<int> ceiling,
+           List<Platform>& platforms);
 
     bool is_jumping;
     bool is_shooting;
@@ -59,6 +66,9 @@ class Player : public RigidEntity {
     void add_health(int amount);
     void set_health(int amount);
     void remove_health(int amount);
+
+    // TODO sposta in private
+    bool is_on_platform();
 
     // overrides
     void tick();

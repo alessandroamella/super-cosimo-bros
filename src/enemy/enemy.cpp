@@ -21,11 +21,11 @@ void Enemy::stop_walking() {
 }
 
 bool Enemy::has_pit_on_left() {
-    return position.x < 1 || floor.at(position.x - 1) > position.y + 1;
+    return position.x < 2 || position.y - 2 >= floor.at(position.x - 1);
 }
 
 bool Enemy::has_pit_on_right() {
-    return position.x >= GAME_WIDTH - 1 || position.y + 1 < floor.at(position.x);
+    return position.x >= GAME_WIDTH - 2 || position.y - 2 >= floor.at(position.x + 1);
 }
 
 bool Enemy::should_change_direction() {
@@ -37,11 +37,11 @@ void Enemy::change_direction() {
 }
 
 bool Enemy::has_wall_on_left() {
-    return position.x < 2 || floor.at(position.x - 2) > position.y + 1;
+    return position.x <= 2 || floor.at(position.x - 2) > position.y;
 }
 
 bool Enemy::has_wall_on_right() {
-    return position.x >= GAME_WIDTH - 2 || position.y + 1 < floor.at(position.x + 1);
+    return position.x >= GAME_WIDTH - 2 || floor.at(position.x + 1) > position.y;
 }
 
 void Enemy::tick() {
@@ -51,8 +51,8 @@ void Enemy::tick() {
         change_direction();
     }
 
-    apply_gravity();
-    clamp_velocity();
+    // apply_gravity();
+    // clamp_velocity();
     move_based_on_vel();
     clamp_position();
 

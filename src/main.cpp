@@ -24,7 +24,7 @@ int main() {
         floor.push(5);
     }
     for (int i = GAME_WIDTH - 20; i < GAME_WIDTH; i++) {
-        floor.push(7);
+        floor.push(3);
     }
 
     List<int> ceiling;
@@ -32,13 +32,26 @@ int main() {
         ceiling.push(GAME_HEIGHT - 1);
     }
 
-    Room test_room(game_timer, floor, ceiling, GAME_WIDTH, GAME_HEIGHT);
+    // generate platform
+    List<Platform> platforms;
+
+    Platform _platform1((Position){.x = 111, .y = 9}, (Position){.x = 120, .y = 12});
+    Platform _platform2((Position){.x = 60, .y = 10}, (Position){.x = 78, .y = 12});
+    Platform _platform3((Position){.x = 65, .y = 15}, (Position){.x = 69, .y = 19});
+    Platform _platform4((Position){.x = 40, .y = 20}, (Position){.x = 57, .y = 23});
+
+    platforms.push(_platform1);
+    platforms.push(_platform2);
+    platforms.push(_platform3);
+    platforms.push(_platform4);
+
+    Room test_room(game_timer, floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT);
 
     List<Room> rooms;
     rooms.push(test_room);
 
     LevelManager level(&rooms);
-    Player player(game_timer, input_manager, (Position){.x = 10, .y = 10}, floor, floor);
+    Player player(game_timer, input_manager, (Position){.x = 10, .y = 10}, floor, floor, platforms);
     GameRenderer game_renderer(player, level, game_timer, input_manager);
 
     game_timer.start();
@@ -60,7 +73,7 @@ int main() {
         if (game_timer.should_tick()) {
             player.tick();
             level.tick();
-            game_renderer.render();
+            game_renderer.render_all();
 
             // TODO delega una classe esterna
             for (size_t i = 0; i < level.get_cur_room()->get_enemies().length(); i++) {

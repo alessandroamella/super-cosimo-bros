@@ -83,9 +83,29 @@ void GameRenderer::render_enemies() {
     }
 }
 
-void GameRenderer::render_floor() {
-    for (int i = 0; i < GAME_WIDTH; i++) {
-        render_str((Position){.x = i, .y = 1}, "_");
+void GameRenderer::rectangle(Position _pos1, Position _pos2) {
+    Position pos1 = translate_position(_pos1);
+    Position pos2 = translate_position(_pos2);
+
+    mvhline(pos1.y, pos1.x, 0, pos2.x - pos1.x);
+    mvhline(pos2.y, pos1.x, 0, pos2.x - pos1.x);
+    mvvline(pos1.y, pos1.x, 0, pos2.y - pos1.y);
+    mvvline(pos1.y, pos2.x, 0, pos2.y - pos1.y);
+    mvaddch(pos1.y, pos1.x, ACS_ULCORNER);
+    mvaddch(pos2.y, pos1.x, ACS_LLCORNER);
+    mvaddch(pos1.y, pos2.x, ACS_URCORNER);
+    mvaddch(pos2.y, pos2.x, ACS_LRCORNER);
+}
+
+void GameRenderer::render_platforms() {
+    for (int i = 0; i < cur_level.get_cur_room()->get_platforms().length(); i++) {
+        Platform platform = cur_level.get_cur_room()->get_platforms().at(i);
+
+        Position pos1 = platform.get_position();
+        Position pos2 = platform.get_ur();
+        std::swap(pos1.y, pos2.y);
+
+        rectangle(pos1, pos2);
     }
 }
 
@@ -132,13 +152,13 @@ void GameRenderer::wait_for_btn(int btn) {
     }
 }
 
-void GameRenderer::render() {
+void GameRenderer::render_all() {
+    // render_debug_status();
     render_player();
     render_enemies();
-    render_floor();
     render_border();
-    draw_floor();
-    render_debug_status();
+    render_platforms();
+    render_floor();
     refresh_screen();
 }
 
@@ -172,22 +192,11 @@ void GameRenderer::render_2d_char_array(AsciiText text,
         // std::cout << correct_pos.x << " - " << correct_pos.y << std::endl;
     }
 
-    refresh_screen();
     render_border();
+    refresh_screen();
 }
 
-void GameRenderer::rectangle(Position pos1, Position pos2) {
-    mvhline(pos1.y, pos1.x, 0, pos2.x - pos1.x);
-    mvhline(pos2.y, pos1.x, 0, pos2.x - pos1.x);
-    mvvline(pos1.y, pos1.x, 0, pos2.y - pos1.y);
-    mvvline(pos1.y, pos2.x, 0, pos2.y - pos1.y);
-    mvaddch(pos1.y, pos1.x, ACS_ULCORNER);
-    mvaddch(pos2.y, pos1.x, ACS_LLCORNER);
-    mvaddch(pos1.y, pos2.x, ACS_URCORNER);
-    mvaddch(pos2.y, pos2.x, ACS_LRCORNER);
-}
-
-void GameRenderer::draw_floor() {
+void GameRenderer::render_floor() {
     Position prev_native_pos = translate_position((Position){.x = 0, .y = cur_level.get_cur_room()->get_floor_at(0)});
 
     for (int i = 0; i < cur_level.get_cur_room()->get_width(); i++) {
@@ -218,16 +227,9 @@ void GameRenderer::draw_floor() {
             }
         }
 
+        render_str((Position){.x = i, .y = cur_height}, std::to_string(cur_height).c_str());
+
         prev_native_pos = (Position){.x = i, .y = native_height};
-    }
-}
-
-void GameRenderer::draw_vertical_line(int start_y, int end_y, int x) {
-    int direction = (start_y < end_y) ? 1 : -1;
-
-    for (int y = start_y; y != end_y; y += direction) {
-        render_str((Position){.x = x, .y = y},
-                   "x");  // disegna la linea verticale
     }
 }
 
@@ -257,6 +259,7 @@ void GameRenderer::render_debug_status() {
     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 19}, "ceiling[x]", (int)cur_level.get_cur_room()->get_ceiling_at(player.get_position().x));
 
     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 21}, "health", (int)player.get_health());
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 22}, "on_platform", (int)player.is_on_platform());
 
     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 24}, "enemies", (int)cur_level.get_cur_room()->get_enemies().length());
     for (int i = 0; i < cur_level.get_cur_room()->get_enemies().length(); i++) {
@@ -269,5 +272,15 @@ void GameRenderer::render_debug_status() {
         render_str_num((Position){.x = 51, .y = GAME_HEIGHT - 25 - i}, "wall_right", (int)enemy.has_wall_on_right());
         render_str_num((Position){.x = 64, .y = GAME_HEIGHT - 25 - i}, "vel_x", (int)enemy.vel_x);
         render_str_num((Position){.x = 72, .y = GAME_HEIGHT - 25 - i}, "vel_y", (int)enemy.vel_y);
+    }
+
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 27}, "platforms", (int)cur_level.get_cur_room()->get_platforms().length());
+    for (int i = 0; i < cur_level.get_cur_room()->get_platforms().length(); i++) {
+        Platform platform = cur_level.get_cur_room()->get_platforms().at(i);
+        render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 28 - i}, "on_top", (int)platform.is_on_top(player.get_position()));
+        render_str_num((Position){.x = 11, .y = GAME_HEIGHT - 28 - i}, "ab", (int)platform.is_above(player.get_position()));
+        render_str_num((Position){.x = 16, .y = GAME_HEIGHT - 28 - i}, "bel", (int)platform.is_below(player.get_position()));
+        render_str_num((Position){.x = 22, .y = GAME_HEIGHT - 28 - i}, "in", (int)platform.is_inside(player.get_position()));
+        render_str_num((Position){.x = 27, .y = GAME_HEIGHT - 28 - i}, "touch_ceiling", (int)platform.is_touching_ceiling(player.get_position()));
     }
 }

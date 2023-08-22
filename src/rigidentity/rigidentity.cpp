@@ -15,7 +15,8 @@ RigidEntity::RigidEntity(GameTimer& timer,
       vel_x(RIGIDBODY_STARTING_VEL_X),
       vel_y(RIGIDBODY_STARTING_VEL_Y),
       floor(floor),
-      ceiling(ceiling) {}
+      ceiling(ceiling),
+      type(EntityType::RigidEntity) {}
 
 void RigidEntity::move_left() {
     vel_x = -PLAYER_WALK_VEL;
@@ -41,18 +42,23 @@ bool RigidEntity::is_touching_ceiling() {
 }
 
 bool RigidEntity::has_wall_on_left() {
-    return position.x < 1 || floor.at(position.x - 1) > position.y + 1;
+    return position.x < 1 || floor.at(position.x - 1) > position.y;
 }
 
 bool RigidEntity::has_wall_on_right() {
-    return position.x >= GAME_WIDTH - 1 || position.y + 1 < floor.at(position.x);
+    return position.x >= GAME_WIDTH - 1 || position.y < floor.at(position.x);
 }
 
 void RigidEntity::clamp_position() {
-    while (position.x < GAME_WIDTH - 1 && (position.x < 1.0f || has_wall_on_left() && vel_x < 0))
-        position.x = (float)((int)position.x + 1);
-    while (position.x > 1 && (position.x > GAME_WIDTH - 1 || has_wall_on_right() && vel_x > 0))
-        position.x = (float)((int)position.x - 1);
+    position.x = clamp(position.x, 1, GAME_WIDTH - 1);
+    position.y = clamp(position.y, 1, GAME_HEIGHT - 1);
+
+    while (has_wall_on_left() && vel_x >= 0 && position.x < GAME_WIDTH - 1) {
+        position.x++;
+    }
+    while (has_wall_on_right() && vel_x <= 0 && position.x > 1) {
+        position.x--;
+    }
 
     position.x = clamp(position.x, 1, GAME_WIDTH - 1);
     position.y = clamp(position.y, 1, GAME_HEIGHT - 1);
@@ -79,12 +85,21 @@ void RigidEntity::move_based_on_vel() {
 
 void RigidEntity::clamp_velocity() {
     vel_x = clamp(vel_x, -MAX_ABS_X_VEL, MAX_ABS_X_VEL);
-    vel_y = clamp(vel_y, -MAX_ABS_Y_VEL, MAX_ABS_Y_VEL);
+    vel_y = clamp(vel_y, MAX_FALL_VEL, MAX_JUMP_VEL);
+
+    while (vel_x >= 0 && (position.x + vel_x >= GAME_WIDTH - 1 || floor.at(position.x + vel_x) > position.y))
+        vel_x--;
+    while (vel_x <= 0 && (position.x + vel_x <= 1 || floor.at(position.x + vel_x - 1) > position.y))
+        vel_x++;
 
     if (has_wall_on_left() && vel_x < 0)
         vel_x = 0;
     else if (has_wall_on_right() && vel_x > 0)
         vel_x = 0;
+}
+
+Position RigidEntity::get_velocity() {
+    return (Position){.x = vel_x, .y = vel_y};
 }
 
 void RigidEntity::reset_position() {

@@ -2,8 +2,8 @@
 
 #include "../shared/functions.hpp"
 
-Room::Room(GameTimer& timer, List<int> floor, List<int> ceiling, int width, int height)
-    : game_timer(timer), floor(floor), ceiling(ceiling), width(width), height(height), enemies(List<Enemy>()), powerups(List<Powerup>()) {
+Room::Room(GameTimer& timer, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height)
+    : game_timer(timer), floor(floor), ceiling(ceiling), width(width), height(height), platforms(platforms), enemies(List<Enemy>()), powerups(List<Powerup>()) {
     if (floor.length() != width)
         throw std::invalid_argument("floor room length must be equal to width");
 }
@@ -42,6 +42,10 @@ int Room::get_ceiling_at(int x) {
             " must be in range [0, width=" + std::to_string(width) + ")");
 
     return ceiling.at(x);
+}
+
+List<Platform>& Room::get_platforms() {
+    return platforms;
 }
 
 int Room::get_width() {
