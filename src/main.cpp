@@ -45,13 +45,13 @@ int main() {
     platforms.push(_platform3);
     platforms.push(_platform4);
 
-    Room test_room(game_timer, floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT);
+    Room test_room(floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT);
 
     List<Room> rooms;
     rooms.push(test_room);
 
-    LevelManager level(&rooms);
-    Player player(game_timer, input_manager, (Position){.x = 10, .y = 10}, floor, floor, platforms);
+    LevelManager level(&rooms, game_timer);
+    Player player(game_timer, input_manager, (Position){.x = 10, .y = 10}, test_room.get_floor(), test_room.get_ceiling(), platforms);
     GameRenderer game_renderer(player, level, game_timer, input_manager);
 
     game_timer.start();
@@ -64,7 +64,7 @@ int main() {
     game_renderer.wait_for_btn(' ');
     game_renderer.clear_screen();
 
-    level.get_cur_room()->place_enemies_randomly(2, 10);
+    level.place_enemies_randomly(2, 10);
     level.get_cur_room()->load();
 
     while (!quit) {
