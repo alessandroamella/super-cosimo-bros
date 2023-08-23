@@ -44,6 +44,14 @@ int Room::get_ceiling_at(int x) {
     return ceiling.at(x);
 }
 
+List<int>& Room::get_floor(){
+    return floor;
+}
+
+ List<int>& Room::get_ceiling(){
+    return ceiling;
+ }
+
 List<Platform>& Room::get_platforms() {
     return platforms;
 }

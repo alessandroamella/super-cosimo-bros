@@ -29,6 +29,9 @@ class Room {
     int get_floor_at(int x);
     int get_ceiling_at(int x);
 
+    List<int>& get_floor();
+    List<int>& get_ceiling();
+
     List<Platform>& get_platforms();
 
     int get_width();
