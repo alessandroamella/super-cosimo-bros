@@ -2,8 +2,8 @@
 
 #include "../shared/functions.hpp"
 
-Room::Room(List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height)
-    : floor(floor), ceiling(ceiling), width(width), height(height), platforms(platforms), enemies(List<Enemy>()), powerups(List<Powerup>()) {
+Room::Room(List<Powerup> powerups, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height)
+    : powerups(powerups), floor(floor), ceiling(ceiling), width(width), height(height), platforms(platforms), enemies(List<Enemy>()) {
     if (floor.length() != width)
         throw std::invalid_argument("floor room length must be equal to width");
 }

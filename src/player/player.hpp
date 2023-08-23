@@ -7,6 +7,7 @@
 #include "../inputmanager/inputmanager.hpp"
 #include "../list/list.hpp"
 #include "../platform/platform.hpp"
+#include "../powerup/powerup.hpp"
 #include "../rigidentity/rigidentity.hpp"
 #include "../shared/position.hpp"
 #include "../shared/settings.hpp"
@@ -32,14 +33,20 @@ class Player : public RigidEntity {
     InputManager& input_manager;
 
     List<Platform>& platforms;
+    List<Powerup>& powerups;
 
     int health;
+    int coins;
+
+    bool has_powerup;
+    EntityType powerup_type;
 
     void update_jump_position();
     void process_input();
 
-    void clamp_speed_based_on_platforms();
-    void clamp_speed_based_on_walls();
+    void handle_platform_collisions();
+    void handle_powerup_collisions();
+    void handle_wall_collisions();
 
     void run_left();
     void run_right();
@@ -54,7 +61,8 @@ class Player : public RigidEntity {
            Position position,
            List<int> floor,
            List<int> ceiling,
-           List<Platform>& platforms);
+           List<Platform>& platforms,
+           List<Powerup>& powerups);
 
     bool is_jumping;
     bool is_shooting;
@@ -66,6 +74,14 @@ class Player : public RigidEntity {
     void add_health(int amount);
     void set_health(int amount);
     void remove_health(int amount);
+
+    int get_coins();
+    void add_coins(int amount);
+    void remove_coins(int amount);
+
+    bool get_has_powerup();
+    EntityType get_powerup_type();
+    void set_has_powerup(bool has_powerup);
 
     // TODO sposta in private
     bool is_on_platform();

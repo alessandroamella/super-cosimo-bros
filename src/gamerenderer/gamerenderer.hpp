@@ -21,6 +21,7 @@ class GameRenderer {
     void render_border();
     void render_player();
     void render_enemies();
+    void render_powerups();
     void rectangle(Position pos1, Position pos2);
     void render_floor();
     void render_platforms();

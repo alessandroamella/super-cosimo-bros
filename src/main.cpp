@@ -8,7 +8,9 @@
 #include "levelmanager/levelmanager.hpp"
 #include "list/list.hpp"
 #include "list/list2d.hpp"
+#include "mushroom/mushroom.hpp"
 #include "player/player.hpp"
+#include "powerup/powerup.hpp"
 #include "room/room.hpp"
 
 int main() {
@@ -45,13 +47,17 @@ int main() {
     platforms.push(_platform3);
     platforms.push(_platform4);
 
-    Room test_room(floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT);
+    List<Powerup> powerups;
+    powerups.push(Mushroom((Position){.x = 20, .y = 10}));
+    powerups.push(Mushroom((Position){.x = 42, .y = 29}));
+
+    Room test_room(powerups, floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT);
 
     List<Room> rooms;
     rooms.push(test_room);
 
     LevelManager level(&rooms, game_timer);
-    Player player(game_timer, input_manager, (Position){.x = 10, .y = 10}, test_room.get_floor(), test_room.get_ceiling(), platforms);
+    Player player(game_timer, input_manager, (Position){.x = 10, .y = 10}, test_room.get_floor(), test_room.get_ceiling(), platforms, powerups);
     GameRenderer game_renderer(player, level, game_timer, input_manager);
 
     game_timer.start();
@@ -79,9 +85,20 @@ int main() {
             for (size_t i = 0; i < level.get_cur_room()->get_enemies().length(); i++) {
                 Enemy& enemy = level.get_cur_room()->get_enemies().at(i);
 
-                if (collides(player, enemy)) {
-                    player.remove_health(ENEMY_DAMAGE);
-                    player.jump();
+                if (collides(player, enemy) && !enemy.get_is_dead()) {
+                    if (player.get_has_powerup()) {
+                        switch (player.get_powerup_type()) {
+                            case EntityType::Mushroom:
+                                player.set_has_powerup(false);
+                                break;
+                            case EntityType::Star:
+                                enemy.set_is_dead(true);
+                                break;
+                        }
+                    } else {
+                        player.remove_health(ENEMY_DAMAGE);
+                        player.jump();
+                    }
                 }
             }
 

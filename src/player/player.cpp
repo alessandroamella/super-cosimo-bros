@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "../coin/coin.hpp"
 #include "../shared/functions.hpp"
 
 Player::Player(GameTimer& timer,
@@ -9,13 +10,17 @@ Player::Player(GameTimer& timer,
                Position position,
                List<int> floor,
                List<int> ceiling,
-               List<Platform>& platforms)
+               List<Platform>& platforms,
+               List<Powerup>& powerups)
     : RigidEntity(timer, position, floor, ceiling),
       input_manager(input_manager),
       is_jumping(false),
       is_shooting(false),
+      has_powerup(false),
       health(PLAYER_STARTING_HEALTH),
-      platforms(platforms) {}
+      coins(0),
+      platforms(platforms),
+      powerups(powerups) {}
 
 void Player::run_left() {
     vel_x = -PLAYER_RUN_VEL;
@@ -118,7 +123,31 @@ void Player::remove_health(int amount) {
     health = std::max(health - amount, 0);
 }
 
-void Player::clamp_speed_based_on_platforms() {
+bool Player::get_has_powerup() {
+    return has_powerup;
+}
+
+void Player::set_has_powerup(bool _has_powerup) {
+    has_powerup = _has_powerup;
+}
+
+EntityType Player::get_powerup_type() {
+    return powerup_type;
+}
+
+int Player::get_coins() {
+    return coins;
+}
+
+void Player::add_coins(int amount) {
+    coins += amount;
+}
+
+void Player::remove_coins(int amount) {
+    coins = std::max(coins - amount, 0);
+}
+
+void Player::handle_platform_collisions() {
     for (int i = 0; i < platforms.length(); i++) {
         Platform& platform = platforms.at(i);
         Position after_pos = (Position){.x = position.x + vel_x, .y = position.y + vel_y};
@@ -148,7 +177,37 @@ void Player::clamp_speed_based_on_platforms() {
     }
 }
 
-void Player::clamp_speed_based_on_walls() {
+void Player::handle_powerup_collisions() {
+    for (int i = 0; i < powerups.length(); i++) {
+        Powerup& powerup = powerups.at(i);
+        Position after_pos = (Position){.x = position.x + vel_x, .y = position.y + vel_y};
+
+        if (powerup.is_inside(after_pos) || (powerup.is_below(position) && (powerup.is_above(after_pos) || powerup.is_inside(after_pos))) || (powerup.is_above(position) && (powerup.is_below(after_pos) || powerup.is_inside(after_pos)))) {
+            throw std::runtime_error("Powerup collision not implemented: " + std::to_string((int)powerup.get_entity_type()) + "");
+            switch (powerup.get_entity_type()) {
+                case EntityType::Mushroom:
+                    has_powerup = has_powerup || powerup.get_is_active();
+                    powerup_type = powerup.get_entity_type();
+                    break;
+                case EntityType::Star:
+                    has_powerup = has_powerup || powerup.get_is_active();
+                    powerup_type = powerup.get_entity_type();
+                    break;
+                case EntityType::Heart:
+                    add_health(HEART_HEALTH_INCREASE);
+                    break;
+                case EntityType::Coin:
+                    int coin_value = ((Coin&)powerup).get_value();
+                    add_coins(coin_value);
+                    break;
+            }
+
+            powerup.set_is_active(false);
+        }
+    }
+}
+
+void Player::handle_wall_collisions() {
     if (has_wall_on_left() && vel_x < 0)
         vel_x = 0;
     else if (has_wall_on_right() && vel_x > 0)
@@ -161,8 +220,8 @@ void Player::tick() {
     process_input();
     apply_gravity();
     clamp_velocity();
-    clamp_speed_based_on_platforms();
-    // clamp_speed_based_on_walls();
+    handle_platform_collisions();
+    handle_powerup_collisions();
     move_based_on_vel();
     clamp_position();
 

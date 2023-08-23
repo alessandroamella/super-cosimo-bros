@@ -6,7 +6,7 @@
 
 #define TICK_INTERVAL 0.075f
 
-#define PLAYER_STARTING_HEALTH 100
+#define PLAYER_STARTING_HEALTH 50
 #define PLAYER_MAX_HEALTH 100
 
 #define ENEMY_STARTING_HEALTH 10
@@ -28,12 +28,20 @@
 
 #define ENEMY_DAMAGE 10
 
+#define HEART_HEALTH_INCREASE 10
+
 #define PLAYER_RENDER_CHARACTER "@"
+#define PLAYER_POWERUP_RENDER_CHARACTER "&"
 #define ENEMY_RENDER_CHARACTER "E"
+#define POWERUP_RENDER_DISABLED_CHARACTER "X"
 
 enum class EntityType {
     StaticEntity,
     RigidEntity,
+    Mushroom,
+    Star,
+    Heart,
+    Coin,
 };
 
 #endif  // _SETTINGS_HPP_

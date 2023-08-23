@@ -13,6 +13,7 @@
 class Enemy : public RigidEntity {
    private:
     int health;
+    bool is_dead;
 
     bool should_change_direction();
     void change_direction();
@@ -25,6 +26,9 @@ class Enemy : public RigidEntity {
 
     void start_walking();
     void stop_walking();
+
+    bool get_is_dead();
+    void set_is_dead(bool is_dead);
 
     // overrides
     void tick();

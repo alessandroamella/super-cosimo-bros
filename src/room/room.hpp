@@ -22,7 +22,7 @@ class Room {
     List<Enemy> enemies;
 
    public:
-    Room(List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height);
+    Room(List<Powerup> powerups, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height);
 
     int get_floor_at(int x);
     int get_ceiling_at(int x);
