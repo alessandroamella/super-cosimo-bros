@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(SuperCosimoBros VERSION 1.0)
 
+set (CMAKE_CXX_STANDARD 11)
+
 # linka ogni file cpp
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 

@@ -12,57 +12,23 @@
 #include "player/player.hpp"
 #include "powerup/powerup.hpp"
 #include "room/room.hpp"
+#include "maps/maps.hpp"
 
 int main() {
     GameTimer game_timer(TICK_INTERVAL);
     InputManager input_manager;
 
-    // Test level
-    List<int> floor;
-    for (int i = 0; i < GAME_WIDTH - 50; i++) {
-        floor.push(2);
-    }
-    for (int i = GAME_WIDTH - 50; i < GAME_WIDTH - 20; i++) {
-        floor.push(5);
-    }
-    for (int i = GAME_WIDTH - 20; i < GAME_WIDTH; i++) {
-        floor.push(3);
-    }
-
-    List<int> ceiling;
-    for (int i = 0; i < GAME_WIDTH; i++) {
-        ceiling.push(GAME_HEIGHT - 1);
-    }
-
-    // generate platform
-    List<Platform> platforms;
-
-    Platform _platform1((Position){.x = 111, .y = 9}, (Position){.x = 120, .y = 12});
-    Platform _platform2((Position){.x = 60, .y = 10}, (Position){.x = 78, .y = 12});
-    Platform _platform3((Position){.x = 65, .y = 15}, (Position){.x = 69, .y = 19});
-    Platform _platform4((Position){.x = 40, .y = 20}, (Position){.x = 57, .y = 23});
-
-    platforms.push(_platform1);
-    platforms.push(_platform2);
-    platforms.push(_platform3);
-    platforms.push(_platform4);
-
-    List<Powerup*> powerups;
-
-    Mushroom p1 = Mushroom((Position){.x = 20, .y = 10});
-    Mushroom p2 = Mushroom((Position){.x = 42, .y = 29});
-
-    powerups.push(&p1);
-    powerups.push(&p2);
-
-    Room test_room(powerups, floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT);
-
+    Maps game_maps;
+    Room layout_1 = game_maps.layout1();
+    Room layout_2 = game_maps.layout2();
+    Room layout_3 = game_maps.layout3();
+  
     List<Room> rooms;
-    rooms.push(test_room);
+    rooms.push(layout_3);
 
     LevelManager level(&rooms, game_timer);
-    Player player(game_timer, input_manager, (Position){.x = 10, .y = 10}, test_room.get_floor(), test_room.get_ceiling(), platforms, powerups);
-    GameRenderer game_renderer(player, level, game_timer);
+    Player player(game_timer, input_manager, (Position){.x = 10, .y = 10}, level.get_cur_room()->get_floor(), level.get_cur_room()->get_floor(), level.get_cur_room()->get_platforms());
+    GameRenderer game_renderer(player, level, game_timer, input_manager);
 
     game_timer.start();
     game_renderer.initialize();
