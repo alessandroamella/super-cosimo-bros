@@ -2,20 +2,29 @@
 
 #include <iostream>
 
+#include "../coin/coin.hpp"
+#include "../mushroom/mushroom.hpp"
 #include "../shared/functions.hpp"
+#include "../star/star.hpp"
 
 Player::Player(GameTimer& timer,
                InputManager& input_manager,
                Position position,
                List<int> floor,
                List<int> ceiling,
-               List<Platform>& platforms)
+               List<Platform>& platforms,
+               List<Powerup*>& powerups)
     : RigidEntity(timer, position, floor, ceiling),
       input_manager(input_manager),
       is_jumping(false),
       is_shooting(false),
+      has_powerup(false),
       health(PLAYER_STARTING_HEALTH),
-      platforms(platforms) {}
+      coins(0),
+      platforms(platforms),
+      powerups(powerups),
+      is_damaged(false),
+      damaged_ticks(0) {}
 
 void Player::run_left() {
     vel_x = -PLAYER_RUN_VEL;
@@ -103,6 +112,12 @@ void Player::apply_gravity() {
 };
 
 int Player::get_health() {
+    if (is_damaged && damaged_should_tick())
+        return std::min(health, 1);
+
+    if (health <= 0)
+        set_is_damaged(false);
+
     return health;
 }
 
@@ -118,7 +133,51 @@ void Player::remove_health(int amount) {
     health = std::max(health - amount, 0);
 }
 
-void Player::clamp_speed_based_on_platforms() {
+bool Player::get_has_powerup() {
+    return has_powerup;
+}
+
+void Player::set_has_powerup(bool _has_powerup) {
+    has_powerup = _has_powerup;
+}
+
+bool Player::get_is_damaged() {
+    if (!is_damaged)
+        return false;
+
+    damaged_ticks++;
+    if (damaged_ticks > PLAYER_DAMAGED_TOTAL_TICKS)
+        is_damaged = false;
+
+    return is_damaged;
+}
+
+void Player::set_is_damaged(bool _is_damaged) {
+    is_damaged = _is_damaged;
+    damaged_ticks = 0;
+}
+
+bool Player::damaged_should_tick() {
+    return damaged_ticks % PLAYER_DAMAGED_BLINK_TICKS == 0;
+}
+
+EntityType Player::get_powerup_type() {
+    return powerup_type;
+}
+
+int Player::get_coins() {
+    return coins;
+}
+
+void Player::add_coins(int amount) {
+    coins += amount;
+}
+
+void Player::remove_coins(int amount) {
+    coins = std::max(coins - amount, 0);
+}
+
+void Player::handle_platform_collisions() {
     for (int i = 0; i < platforms.length(); i++) {
         Platform& platform = platforms.at(i);
         Position after_pos = (Position){.x = position.x + vel_x, .y = position.y + vel_y};
@@ -148,7 +207,45 @@ void Player::clamp_speed_based_on_platforms() {
     }
 }
 
-void Player::clamp_speed_based_on_walls() {
+void Player::handle_powerup_collisions() {
+    for (int i = 0; i < powerups.length(); i++) {
+        // giusto per stare sicuri
+        if (powerups.at(i) == nullptr)
+            throw std::runtime_error("Null pointer exception at Player::handle_powerup_collisions()");
+
+        Powerup* powerup = powerups.at(i);
+        // check null pointer
+
+        Position after_pos = (Position){.x = position.x + vel_x, .y = position.y + vel_y};
+
+        if (powerup->is_inside(after_pos) || (powerup->is_below(position) && (powerup->is_above(after_pos) || powerup->is_inside(after_pos))) || (powerup->is_above(position) && (powerup->is_below(after_pos) || powerup->is_inside(after_pos)))) {
+            switch (powerup->get_entity_type()) {
+                case EntityType::Mushroom:
+                    has_powerup = has_powerup || powerup->get_is_active();
+                    powerup_type = powerup->get_entity_type();
+                    break;
+                case EntityType::Star:
+                    has_powerup = has_powerup || powerup->get_is_active();
+                    powerup_type = powerup->get_entity_type();
+                    break;
+                case EntityType::Heart:
+                    add_health(HEART_HEALTH_INCREASE);
+                    break;
+                case EntityType::Coin:
+                    Coin* coinPowerup = dynamic_cast<Coin*>(powerup);
+                    if (coinPowerup) {
+                        int coin_value = coinPowerup->get_value();
+                        add_coins(coin_value);
+                    }
+                    break;
+            }
+
+            powerup->set_is_active(false);
+        }
+    }
+}
+
+void Player::handle_wall_collisions() {
     if (has_wall_on_left() && vel_x < 0)
         vel_x = 0;
     else if (has_wall_on_right() && vel_x > 0)
@@ -161,8 +258,8 @@ void Player::tick() {
     process_input();
     apply_gravity();
     clamp_velocity();
-    clamp_speed_based_on_platforms();
-    // clamp_speed_based_on_walls();
+    handle_platform_collisions();
+    handle_powerup_collisions();
     move_based_on_vel();
     clamp_position();
 

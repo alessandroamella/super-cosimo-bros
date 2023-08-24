@@ -5,25 +5,27 @@
 
 #include "../asciiart/asciitext.hpp"
 #include "../gametimer/gametimer.hpp"
-#include "../inputmanager/inputmanager.hpp"
 #include "../levelmanager/levelmanager.hpp"
 #include "../player/player.hpp"
 #include "../shared/settings.hpp"
 
 class GameRenderer {
    private:
+    WINDOW* win;
+
     Player& player;
     LevelManager& cur_level;
     GameTimer& game_timer;
-    InputManager& input_manager;
 
     void check_terminal_size(int width, int height);
     void render_border();
     void render_player();
     void render_enemies();
+    void render_powerups();
     void rectangle(Position pos1, Position pos2);
     void render_floor();
     void render_platforms();
+    void render_top_bar();
     void refresh_screen();
     int translate_y(int y) const;
     Position translate_position(Position position) const;
@@ -31,7 +33,7 @@ class GameRenderer {
     void render_debug_status();
 
    public:
-    GameRenderer(Player& player, LevelManager& cur_level, GameTimer& timer, InputManager& input_manager);
+    GameRenderer(Player& player, LevelManager& cur_level, GameTimer& timer);
     ~GameRenderer();
 
     void initialize();
@@ -40,8 +42,9 @@ class GameRenderer {
 
     void render_2d_char_array(AsciiText text, Alignment h_align, Alignment v_align);
     void render_str_num(Position position, const char* str, int number) const;
-    void wait_for_btn(int btn);
     void clear_screen();
+
+    WINDOW* get_win() const;
 };
 
 #endif  // _GAMERENDERER_HPP_

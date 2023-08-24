@@ -1,8 +1,7 @@
 #include "enemy.hpp"
 
 Enemy::Enemy(GameTimer& timer, Position position, List<int> floor, List<int> ceiling)
-    : RigidEntity(timer, position, floor, ceiling), health(ENEMY_STARTING_HEALTH) {
-}
+    : RigidEntity(timer, position, floor, ceiling), health(ENEMY_STARTING_HEALTH), is_dead(false) {}
 
 int Enemy::get_health() {
     return health;
@@ -18,6 +17,14 @@ void Enemy::start_walking() {
 
 void Enemy::stop_walking() {
     vel_x = 0;
+}
+
+bool Enemy::get_is_dead() {
+    return is_dead;
+}
+
+void Enemy::set_is_dead(bool _is_dead) {
+    is_dead = _is_dead;
 }
 
 bool Enemy::has_pit_on_left() {
@@ -45,6 +52,9 @@ bool Enemy::has_wall_on_right() {
 }
 
 void Enemy::tick() {
+    if (is_dead)
+        return;
+
     Position cur_pos = position;
 
     if (should_change_direction()) {

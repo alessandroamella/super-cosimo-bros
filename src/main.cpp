@@ -8,7 +8,9 @@
 #include "levelmanager/levelmanager.hpp"
 #include "list/list.hpp"
 #include "list/list2d.hpp"
+#include "mushroom/mushroom.hpp"
 #include "player/player.hpp"
+#include "powerup/powerup.hpp"
 #include "room/room.hpp"
 #include "maps/maps.hpp"
 
@@ -17,14 +19,14 @@ int main() {
     InputManager input_manager;
 
     Maps game_maps;
-    Room layout_1 = game_maps.layout1(game_timer);
-    Room layout_2 = game_maps.layout2(game_timer);
-    Room layout_3 = game_maps.layout3(game_timer);
-
+    Room layout_1 = game_maps.layout1();
+    Room layout_2 = game_maps.layout2();
+    Room layout_3 = game_maps.layout3();
+  
     List<Room> rooms;
     rooms.push(layout_3);
 
-    LevelManager level(&rooms);
+    LevelManager level(&rooms, game_timer);
     Player player(game_timer, input_manager, (Position){.x = 10, .y = 10}, level.get_cur_room()->get_floor(), level.get_cur_room()->get_floor(), level.get_cur_room()->get_platforms());
     GameRenderer game_renderer(player, level, game_timer, input_manager);
 
@@ -35,14 +37,14 @@ int main() {
 
     game_renderer.render_2d_char_array(title, Alignment::Center, Alignment::Center);
 
-    game_renderer.wait_for_btn(' ');
+    input_manager.wait_for_btn(game_renderer.get_win(), ' ');
     game_renderer.clear_screen();
 
-    level.get_cur_room()->place_enemies_randomly(2, 10);
+    level.place_enemies_randomly(2, 10);
     level.get_cur_room()->load();
 
     while (!quit) {
-        input_manager.read_input();
+        input_manager.read_input(game_renderer.get_win());
 
         if (game_timer.should_tick()) {
             player.tick();
@@ -53,15 +55,28 @@ int main() {
             for (size_t i = 0; i < level.get_cur_room()->get_enemies().length(); i++) {
                 Enemy& enemy = level.get_cur_room()->get_enemies().at(i);
 
-                if (collides(player, enemy)) {
-                    player.remove_health(ENEMY_DAMAGE);
-                    player.jump();
+                if (collides(player, enemy) && !enemy.get_is_dead()) {
+                    if (player.get_has_powerup()) {
+                        switch (player.get_powerup_type()) {
+                            case EntityType::Mushroom:
+                                player.set_is_damaged(true);
+                                player.set_has_powerup(false);
+                                break;
+                            case EntityType::Star:
+                                enemy.set_is_dead(true);
+                                break;
+                        }
+                    } else {
+                        player.set_is_damaged(true);
+                        player.remove_health(ENEMY_DAMAGE);
+                        player.jump();
+                    }
                 }
             }
 
             if (player.get_health() <= 0) {
                 game_renderer.render_2d_char_array(game_over, Alignment::Center, Alignment::Center);
-                game_renderer.wait_for_btn(' ');
+                input_manager.wait_for_btn(game_renderer.get_win(), ' ');
                 game_renderer.clear_screen();
                 player.set_health(PLAYER_STARTING_HEALTH);
                 player.reset_position();

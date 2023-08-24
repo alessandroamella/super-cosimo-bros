@@ -14,17 +14,15 @@ class Room {
     int width;
     int height;
 
-    GameTimer& game_timer;
-
     List<int> floor;
     List<int> ceiling;
     List<Platform> platforms;
 
-    List<Powerup> powerups;
+    List<Powerup*> powerups;
     List<Enemy> enemies;
 
    public:
-    Room(GameTimer& timer, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height);
+    Room(List<Powerup*> powerups, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height);
 
     int get_floor_at(int x);
     int get_ceiling_at(int x);
@@ -37,11 +35,12 @@ class Room {
     int get_width();
     int get_height();
 
-    List<Powerup>& get_powerups();
+    void add_enemy(Enemy enemy);
+
+    List<Powerup*>& get_powerups();
     List<Enemy>& get_enemies();
 
     bool is_within_bounds(Position position);
-    void place_enemies_randomly(int enemy_count, int start_padding);
 
     void load();
     void freeze();

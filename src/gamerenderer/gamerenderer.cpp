@@ -3,14 +3,18 @@
 #include <cstring>
 #include <iostream>
 
+#define WHITE_TEXT 1
+#define RED_TEXT 2
+#define YELLOW_TEXT 3
+#define BLUE_TEXT 4
+#define GREEN_TEXT 5
+
 GameRenderer::GameRenderer(Player& player,
                            LevelManager& cur_level,
-                           GameTimer& timer,
-                           InputManager& input_manager)
+                           GameTimer& timer)
     : player(player),
       cur_level(cur_level),
-      game_timer(timer),
-      input_manager(input_manager) {}
+      game_timer(timer) {}
 
 GameRenderer::~GameRenderer() {
     endwin();  // Chiudi la finestra ncurses alla distruzione dell'oggetto
@@ -18,20 +22,28 @@ GameRenderer::~GameRenderer() {
 
 void GameRenderer::initialize() {
     int width, height;
-    initscr();                        // Inizializza la finestra ncurses
-    timeout(-1);                      // Disabilita timeout di getch
-    cbreak();                         // Disabilita il buffering del tasto Invio
-    raw();                            // Disabilita il buffer di input line-by-line
-    keypad(stdscr, TRUE);             // Abilita la lettura dei tasti speciali
-    noecho();                         // Non mostrare l'input utente
-    curs_set(0);                      // Nascondi il cursore
-    getmaxyx(stdscr, height, width);  // Imposta larghezza e altezza
-    check_terminal_size(width, height);
-    render_border();
+    initscr();                                          // Inizializza la finestra ncurses
+    start_color();                                      // Abilita il sistema di colori
+    init_pair(WHITE_TEXT, COLOR_WHITE, COLOR_BLACK);    // Testo bianco su sfondo nero (id, foreground, background)
+    init_pair(RED_TEXT, COLOR_RED, COLOR_BLACK);        //
+    init_pair(YELLOW_TEXT, COLOR_YELLOW, COLOR_BLACK);  //
+    init_pair(BLUE_TEXT, COLOR_BLUE, COLOR_BLACK);      //
+    init_pair(GREEN_TEXT, COLOR_GREEN, COLOR_BLACK);    //
+    timeout(-1);                                        // Disabilita timeout di getch
+    cbreak();                                           // Disabilita il buffering del tasto Invio
+    raw();                                              // Disabilita il buffer di input line-by-line
+    keypad(stdscr, TRUE);                               // Abilita la lettura dei tasti speciali
+    noecho();                                           // Non mostrare l'input utente
+    curs_set(0);                                        // Nascondi il cursore
+    getmaxyx(stdscr, height, width);                    // Imposta larghezza e altezza
+    // check_terminal_size(width, height);
 
-    // Nota: nodelay non viene chiamato dunque all'inizio getch è bloccante!!
-    // Bisogna chiamare wait_for_btn almeno una volta per renderlo sbloccante
-    // (=> nodelay TRUE)
+    // Crea la finestra principale
+    win = newwin(GAME_HEIGHT, GAME_WIDTH, 0, 0);
+    keypad(win, TRUE);
+    wbkgd(win, COLOR_PAIR(1));
+
+    render_border();
 }
 
 void GameRenderer::check_terminal_size(int width, int height) {
@@ -46,20 +58,20 @@ void GameRenderer::check_terminal_size(int width, int height) {
 
 void GameRenderer::render_border() {
     // Stampa il bordo superiore
-    mvhline(0, 1, ACS_HLINE, GAME_WIDTH - 2);
+    mvwhline(win, 0, 1, ACS_HLINE, GAME_WIDTH - 2);
 
     // Stampa il bordo sinistro e destro
-    mvvline(1, 0, ACS_VLINE, GAME_HEIGHT - 2);
-    mvvline(1, GAME_WIDTH - 1, ACS_VLINE, GAME_HEIGHT - 2);
+    mvwvline(win, 1, 0, ACS_VLINE, GAME_HEIGHT - 2);
+    mvwvline(win, 1, GAME_WIDTH - 1, ACS_VLINE, GAME_HEIGHT - 2);
 
     // Stampa il bordo inferiore
-    mvhline(GAME_HEIGHT - 1, 1, ACS_HLINE, GAME_WIDTH - 2);
+    mvwhline(win, GAME_HEIGHT - 1, 1, ACS_HLINE, GAME_WIDTH - 2);
 
     // Stampa gli angoli del bordo
-    mvaddch(0, 0, ACS_ULCORNER);
-    mvaddch(0, GAME_WIDTH - 1, ACS_URCORNER);
-    mvaddch(GAME_HEIGHT - 1, 0, ACS_LLCORNER);
-    mvaddch(GAME_HEIGHT - 1, GAME_WIDTH - 1, ACS_LRCORNER);
+    mvwaddch(win, 0, 0, ACS_ULCORNER);
+    mvwaddch(win, 0, GAME_WIDTH - 1, ACS_URCORNER);
+    mvwaddch(win, GAME_HEIGHT - 1, 0, ACS_LLCORNER);
+    mvwaddch(win, GAME_HEIGHT - 1, GAME_WIDTH - 1, ACS_LRCORNER);
 }
 
 void GameRenderer::render_player() {
@@ -68,12 +80,28 @@ void GameRenderer::render_player() {
 
     // cancello vecchio player
     render_str(last_player_pos, " ");
-    render_str(player_pos, PLAYER_RENDER_CHARACTER);
+
+    bool player_has_mushroom = player.get_has_powerup() && player.get_powerup_type() == EntityType::Mushroom;
+
+    if (player.get_is_damaged() && player.damaged_should_tick()) {
+        wattron(win, COLOR_PAIR(RED_TEXT));
+        render_str(player_pos, player_has_mushroom ? PLAYER_POWERUP_RENDER_CHARACTER : PLAYER_RENDER_CHARACTER);
+        wattroff(win, COLOR_PAIR(RED_TEXT));
+    } else if (player_has_mushroom) {
+        wattron(win, COLOR_PAIR(YELLOW_TEXT));
+        render_str(player_pos, PLAYER_POWERUP_RENDER_CHARACTER);
+        wattroff(win, COLOR_PAIR(YELLOW_TEXT));
+    } else {
+        render_str(player_pos, PLAYER_RENDER_CHARACTER);
+    }
 }
 
 void GameRenderer::render_enemies() {
     for (int i = 0; i < cur_level.get_cur_room()->get_enemies().length(); i++) {
         Enemy enemy = cur_level.get_cur_room()->get_enemies().at(i);
+        if (enemy.get_is_dead())
+            continue;
+
         Position enemy_pos = enemy.get_position();
         Position last_enemy_pos = enemy.get_last_position();
 
@@ -83,18 +111,37 @@ void GameRenderer::render_enemies() {
     }
 }
 
+void GameRenderer::render_powerups() {
+    for (int i = 0; i < cur_level.get_cur_room()->get_powerups().length(); i++) {
+        Powerup* powerup = cur_level.get_cur_room()->get_powerups().at(i);
+        if (powerup == nullptr)
+            throw std::runtime_error("Null pointer exception at GameRenderer::render_powerups()");
+
+        Position powerup_pos = powerup->get_position();
+
+        rectangle(powerup_pos, powerup->get_ur());
+
+        Position char_pos = (Position){.x = powerup_pos.x + 2, .y = powerup_pos.y - 1};
+
+        bool is_active = powerup->get_is_active();
+        wattron(win, COLOR_PAIR(is_active ? YELLOW_TEXT : RED_TEXT));
+        render_str(char_pos, powerup->get_is_active() ? powerup->get_render_char() : POWERUP_RENDER_DISABLED_CHARACTER);
+        wattroff(win, COLOR_PAIR(is_active ? YELLOW_TEXT : RED_TEXT));
+    }
+}
+
 void GameRenderer::rectangle(Position _pos1, Position _pos2) {
     Position pos1 = translate_position(_pos1);
     Position pos2 = translate_position(_pos2);
 
-    mvhline(pos1.y, pos1.x, 0, pos2.x - pos1.x);
-    mvhline(pos2.y, pos1.x, 0, pos2.x - pos1.x);
-    mvvline(pos1.y, pos1.x, 0, pos2.y - pos1.y);
-    mvvline(pos1.y, pos2.x, 0, pos2.y - pos1.y);
-    mvaddch(pos1.y, pos1.x, ACS_ULCORNER);
-    mvaddch(pos2.y, pos1.x, ACS_LLCORNER);
-    mvaddch(pos1.y, pos2.x, ACS_URCORNER);
-    mvaddch(pos2.y, pos2.x, ACS_LRCORNER);
+    mvwhline(win, pos1.y, pos1.x, 0, pos2.x - pos1.x);
+    mvwhline(win, pos2.y, pos1.x, 0, pos2.x - pos1.x);
+    mvwvline(win, pos1.y, pos1.x, 0, pos2.y - pos1.y);
+    mvwvline(win, pos1.y, pos2.x, 0, pos2.y - pos1.y);
+    mvwaddch(win, pos1.y, pos1.x, ACS_ULCORNER);
+    mvwaddch(win, pos2.y, pos1.x, ACS_LLCORNER);
+    mvwaddch(win, pos1.y, pos2.x, ACS_URCORNER);
+    mvwaddch(win, pos2.y, pos2.x, ACS_LRCORNER);
 }
 
 void GameRenderer::render_platforms() {
@@ -110,11 +157,15 @@ void GameRenderer::render_platforms() {
 }
 
 void GameRenderer::clear_screen() {
-    clear();
+    werase(win);
+}
+
+WINDOW* GameRenderer::get_win() const {
+    return win;
 }
 
 void GameRenderer::refresh_screen() {
-    refresh();
+    wrefresh(win);
 }
 
 int GameRenderer::translate_y(int y) const {
@@ -127,33 +178,20 @@ Position GameRenderer::translate_position(Position position) const {
 
 void GameRenderer::render_str(Position _position, const char* str) const {
     Position position = translate_position(_position);
-    mvprintw(position.y, position.x, "%s", str);
+    mvwprintw(win, position.y, position.x, "%s", str);
 };
 
 void GameRenderer::render_str_num(Position position,
                                   const char* str,
                                   int number) const {
     render_str(position, str);
-    attron(COLOR_PAIR(4));
-    printw(" %d  ", number);
-    attroff(COLOR_PAIR(4));
-}
-
-void GameRenderer::wait_for_btn(int btn) {
-    nodelay(stdscr, FALSE);
-
-    while (true) {
-        int ch = getch();
-
-        if (ch == (int)btn) {
-            nodelay(stdscr, TRUE);
-            return;
-        }
-    }
+    wprintw(win, " %d  ", number);
 }
 
 void GameRenderer::render_all() {
     // render_debug_status();
+    render_top_bar();
+    render_powerups();
     render_player();
     render_enemies();
     render_border();
@@ -197,6 +235,8 @@ void GameRenderer::render_2d_char_array(AsciiText text,
 }
 
 void GameRenderer::render_floor() {
+    wattron(win, COLOR_PAIR(GREEN_TEXT));
+
     Position prev_native_pos = translate_position((Position){.x = 0, .y = cur_level.get_cur_room()->get_floor_at(0)});
 
     for (int i = 0; i < cur_level.get_cur_room()->get_width(); i++) {
@@ -207,41 +247,69 @@ void GameRenderer::render_floor() {
             continue;
 
         // forse solo i - 1, documentazione di merda
-        mvhline(prev_native_pos.y, prev_native_pos.x + 1, ACS_HLINE,
-                i - prev_native_pos.x - 1);
+        mvwhline(win, prev_native_pos.y, prev_native_pos.x + 1, ACS_HLINE,
+                 i - prev_native_pos.x - 1);
 
         // caso in cui non sei all'ultimo render ma c'e' differenza di altezza:
         // congiungi
         if (native_height != prev_native_pos.y) {
             auto m = std::min(prev_native_pos.y, native_height);
             auto M = std::max(prev_native_pos.y, native_height);
-            mvvline(m + 1, i, ACS_VLINE, M - m - 1);
+            mvwvline(win, m + 1, i, ACS_VLINE, M - m - 1);
 
             // angoli
             if (prev_native_pos.y < native_height) {
-                mvaddch(prev_native_pos.y, i, ACS_URCORNER);
-                mvaddch(native_height, i, ACS_LLCORNER);
+                mvwaddch(win, prev_native_pos.y, i, ACS_URCORNER);
+                mvwaddch(win, native_height, i, ACS_LLCORNER);
             } else {
-                mvaddch(prev_native_pos.y, i, ACS_LRCORNER);
-                mvaddch(native_height, i, ACS_ULCORNER);
+                mvwaddch(win, prev_native_pos.y, i, ACS_LRCORNER);
+                mvwaddch(win, native_height, i, ACS_ULCORNER);
             }
         }
 
-        render_str((Position){.x = i, .y = cur_height}, std::to_string(cur_height).c_str());
+        // render_str((Position){.x = i, .y = cur_height}, std::to_string(cur_height).c_str());
 
         prev_native_pos = (Position){.x = i, .y = native_height};
     }
+
+    wattroff(win, COLOR_PAIR(GREEN_TEXT));
+}
+
+void GameRenderer::render_top_bar() {
+    // salute
+    render_str((Position){.x = 6, .y = GAME_HEIGHT - 2}, PLAYER_NAME);
+
+    wattron(win, COLOR_PAIR(RED_TEXT));
+
+    int health = player.get_health();
+    int full_hearts = health / 10;
+    int empty_hearts = (PLAYER_MAX_HEALTH - health) / 10;
+
+    for (int i = 0; i < full_hearts; i++) {
+        render_str((Position){.x = 5 + i, .y = GAME_HEIGHT - 3}, "o");
+    }
+
+    wattroff(win, COLOR_PAIR(RED_TEXT));
+
+    for (int i = 0; i < empty_hearts; i++) {
+        render_str((Position){.x = 5 + (full_hearts + i), .y = GAME_HEIGHT - 3}, "o");
+    }
+
+    // monete
+    render_str((Position){.x = 30, .y = GAME_HEIGHT - 2}, "Coins");
+    wattron(win, COLOR_PAIR(YELLOW_TEXT));
+    render_str_num((Position){.x = 31, .y = GAME_HEIGHT - 3}, "", player.get_coins());
+    wattroff(win, COLOR_PAIR(YELLOW_TEXT));
+
+    // difficolta
+    render_str((Position){.x = 50, .y = GAME_HEIGHT - 2}, "Difficulty");
+    wattron(win, COLOR_PAIR(YELLOW_TEXT));
+    render_str_num((Position){.x = 53, .y = GAME_HEIGHT - 3}, "", cur_level.get_difficulty());
+    wattroff(win, COLOR_PAIR(YELLOW_TEXT));
 }
 
 void GameRenderer::render_debug_status() {
     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 1}, "last_tick", (int)(game_timer.last_tick_time.time_since_epoch() / std::chrono::milliseconds(1)));
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 2}, "last_char", (int)(input_manager.get_last_ch()));
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 3}, " w", (int)input_manager.is_key_pressed('w'));
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 4}, " a", (int)input_manager.is_key_pressed('a'));
-    render_str_num((Position){.x = 7, .y = GAME_HEIGHT - 3}, " s", (int)input_manager.is_key_pressed('s'));
-    render_str_num((Position){.x = 7, .y = GAME_HEIGHT - 4}, " d", (int)input_manager.is_key_pressed('d'));
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 5}, "rl", (int)input_manager.is_key_pressed(1));
-    render_str_num((Position){.x = 7, .y = GAME_HEIGHT - 5}, "rr", (int)input_manager.is_key_pressed(4));
 
     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 6}, "is_on_floor", (int)player.is_on_floor());
     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 7}, "is_touching_ceiling", (int)player.is_touching_ceiling());
@@ -261,26 +329,26 @@ void GameRenderer::render_debug_status() {
     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 21}, "health", (int)player.get_health());
     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 22}, "on_platform", (int)player.is_on_platform());
 
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 24}, "enemies", (int)cur_level.get_cur_room()->get_enemies().length());
-    for (int i = 0; i < cur_level.get_cur_room()->get_enemies().length(); i++) {
-        Enemy enemy = cur_level.get_cur_room()->get_enemies().at(i);
-        render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 25 - i}, "x", (int)enemy.get_position().x);
-        render_str_num((Position){.x = 8, .y = GAME_HEIGHT - 25 - i}, "y", (int)enemy.get_position().y);
-        render_str_num((Position){.x = 12, .y = GAME_HEIGHT - 25 - i}, "on_floor", (int)enemy.is_on_floor());
-        render_str_num((Position){.x = 23, .y = GAME_HEIGHT - 25 - i}, "touch_ceiling", (int)enemy.is_touching_ceiling());
-        render_str_num((Position){.x = 39, .y = GAME_HEIGHT - 25 - i}, "wall_left", (int)enemy.has_wall_on_left());
-        render_str_num((Position){.x = 51, .y = GAME_HEIGHT - 25 - i}, "wall_right", (int)enemy.has_wall_on_right());
-        render_str_num((Position){.x = 64, .y = GAME_HEIGHT - 25 - i}, "vel_x", (int)enemy.vel_x);
-        render_str_num((Position){.x = 72, .y = GAME_HEIGHT - 25 - i}, "vel_y", (int)enemy.vel_y);
-    }
+    // render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 24}, "enemies", (int)cur_level.get_cur_room()->get_enemies().length());
+    // for (int i = 0; i < cur_level.get_cur_room()->get_enemies().length(); i++) {
+    //     Enemy enemy = cur_level.get_cur_room()->get_enemies().at(i);
+    //     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 25 - i}, "x", (int)enemy.get_position().x);
+    //     render_str_num((Position){.x = 8, .y = GAME_HEIGHT - 25 - i}, "y", (int)enemy.get_position().y);
+    //     render_str_num((Position){.x = 12, .y = GAME_HEIGHT - 25 - i}, "on_floor", (int)enemy.is_on_floor());
+    //     render_str_num((Position){.x = 23, .y = GAME_HEIGHT - 25 - i}, "touch_ceiling", (int)enemy.is_touching_ceiling());
+    //     render_str_num((Position){.x = 39, .y = GAME_HEIGHT - 25 - i}, "wall_left", (int)enemy.has_wall_on_left());
+    //     render_str_num((Position){.x = 51, .y = GAME_HEIGHT - 25 - i}, "wall_right", (int)enemy.has_wall_on_right());
+    //     render_str_num((Position){.x = 64, .y = GAME_HEIGHT - 25 - i}, "vel_x", (int)enemy.vel_x);
+    //     render_str_num((Position){.x = 72, .y = GAME_HEIGHT - 25 - i}, "vel_y", (int)enemy.vel_y);
+    // }
 
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 27}, "platforms", (int)cur_level.get_cur_room()->get_platforms().length());
-    for (int i = 0; i < cur_level.get_cur_room()->get_platforms().length(); i++) {
-        Platform platform = cur_level.get_cur_room()->get_platforms().at(i);
-        render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 28 - i}, "on_top", (int)platform.is_on_top(player.get_position()));
-        render_str_num((Position){.x = 11, .y = GAME_HEIGHT - 28 - i}, "ab", (int)platform.is_above(player.get_position()));
-        render_str_num((Position){.x = 16, .y = GAME_HEIGHT - 28 - i}, "bel", (int)platform.is_below(player.get_position()));
-        render_str_num((Position){.x = 22, .y = GAME_HEIGHT - 28 - i}, "in", (int)platform.is_inside(player.get_position()));
-        render_str_num((Position){.x = 27, .y = GAME_HEIGHT - 28 - i}, "touch_ceiling", (int)platform.is_touching_ceiling(player.get_position()));
-    }
+    // render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 27}, "platforms", (int)cur_level.get_cur_room()->get_platforms().length());
+    // for (int i = 0; i < cur_level.get_cur_room()->get_platforms().length(); i++) {
+    //     Platform platform = cur_level.get_cur_room()->get_platforms().at(i);
+    //     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 28 - i}, "on_top", (int)platform.is_on_top(player.get_position()));
+    //     render_str_num((Position){.x = 11, .y = GAME_HEIGHT - 28 - i}, "ab", (int)platform.is_above(player.get_position()));
+    //     render_str_num((Position){.x = 16, .y = GAME_HEIGHT - 28 - i}, "bel", (int)platform.is_below(player.get_position()));
+    //     render_str_num((Position){.x = 22, .y = GAME_HEIGHT - 28 - i}, "in", (int)platform.is_inside(player.get_position()));
+    //     render_str_num((Position){.x = 27, .y = GAME_HEIGHT - 28 - i}, "touch_ceiling", (int)platform.is_touching_ceiling(player.get_position()));
+    // }
 }
