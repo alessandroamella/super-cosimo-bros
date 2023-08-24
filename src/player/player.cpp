@@ -3,7 +3,9 @@
 #include <iostream>
 
 #include "../coin/coin.hpp"
+#include "../mushroom/mushroom.hpp"
 #include "../shared/functions.hpp"
+#include "../star/star.hpp"
 
 Player::Player(GameTimer& timer,
                InputManager& input_manager,
@@ -11,7 +13,7 @@ Player::Player(GameTimer& timer,
                List<int> floor,
                List<int> ceiling,
                List<Platform>& platforms,
-               List<Powerup>& powerups)
+               List<Powerup*>& powerups)
     : RigidEntity(timer, position, floor, ceiling),
       input_manager(input_manager),
       is_jumping(false),
@@ -20,7 +22,9 @@ Player::Player(GameTimer& timer,
       health(PLAYER_STARTING_HEALTH),
       coins(0),
       platforms(platforms),
-      powerups(powerups) {}
+      powerups(powerups),
+      is_damaged(false),
+      damaged_ticks(0) {}
 
 void Player::run_left() {
     vel_x = -PLAYER_RUN_VEL;
@@ -108,6 +112,12 @@ void Player::apply_gravity() {
 };
 
 int Player::get_health() {
+    if (is_damaged && damaged_should_tick())
+        return std::min(health, 1);
+
+    if (health <= 0)
+        set_is_damaged(false);
+
     return health;
 }
 
@@ -129,6 +139,26 @@ bool Player::get_has_powerup() {
 
 void Player::set_has_powerup(bool _has_powerup) {
     has_powerup = _has_powerup;
+}
+
+bool Player::get_is_damaged() {
+    if (!is_damaged)
+        return false;
+
+    damaged_ticks++;
+    if (damaged_ticks > PLAYER_DAMAGED_TOTAL_TICKS)
+        is_damaged = false;
+
+    return is_damaged;
+}
+
+void Player::set_is_damaged(bool _is_damaged) {
+    is_damaged = _is_damaged;
+    damaged_ticks = 0;
+}
+
+bool Player::damaged_should_tick() {
+    return damaged_ticks % PLAYER_DAMAGED_BLINK_TICKS == 0;
 }
 
 EntityType Player::get_powerup_type() {
@@ -179,30 +209,38 @@ void Player::handle_platform_collisions() {
 
 void Player::handle_powerup_collisions() {
     for (int i = 0; i < powerups.length(); i++) {
-        Powerup& powerup = powerups.at(i);
+        // giusto per stare sicuri
+        if (powerups.at(i) == nullptr)
+            throw std::runtime_error("Null pointer exception at Player::handle_powerup_collisions()");
+
+        Powerup* powerup = powerups.at(i);
+        // check null pointer
+
         Position after_pos = (Position){.x = position.x + vel_x, .y = position.y + vel_y};
 
-        if (powerup.is_inside(after_pos) || (powerup.is_below(position) && (powerup.is_above(after_pos) || powerup.is_inside(after_pos))) || (powerup.is_above(position) && (powerup.is_below(after_pos) || powerup.is_inside(after_pos)))) {
-            throw std::runtime_error("Powerup collision not implemented: " + std::to_string((int)powerup.get_entity_type()) + "");
-            switch (powerup.get_entity_type()) {
+        if (powerup->is_inside(after_pos) || (powerup->is_below(position) && (powerup->is_above(after_pos) || powerup->is_inside(after_pos))) || (powerup->is_above(position) && (powerup->is_below(after_pos) || powerup->is_inside(after_pos)))) {
+            switch (powerup->get_entity_type()) {
                 case EntityType::Mushroom:
-                    has_powerup = has_powerup || powerup.get_is_active();
-                    powerup_type = powerup.get_entity_type();
+                    has_powerup = has_powerup || powerup->get_is_active();
+                    powerup_type = powerup->get_entity_type();
                     break;
                 case EntityType::Star:
-                    has_powerup = has_powerup || powerup.get_is_active();
-                    powerup_type = powerup.get_entity_type();
+                    has_powerup = has_powerup || powerup->get_is_active();
+                    powerup_type = powerup->get_entity_type();
                     break;
                 case EntityType::Heart:
                     add_health(HEART_HEALTH_INCREASE);
                     break;
                 case EntityType::Coin:
-                    int coin_value = ((Coin&)powerup).get_value();
-                    add_coins(coin_value);
+                    Coin* coinPowerup = dynamic_cast<Coin*>(powerup);
+                    if (coinPowerup) {
+                        int coin_value = coinPowerup->get_value();
+                        add_coins(coin_value);
+                    }
                     break;
             }
 
-            powerup.set_is_active(false);
+            powerup->set_is_active(false);
         }
     }
 }

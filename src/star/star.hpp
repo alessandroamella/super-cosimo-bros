@@ -8,7 +8,7 @@ class Star : public Powerup {
    private:
    public:
     Star(Position position);
-    EntityType get_entity_type();
+    EntityType get_entity_type() override;
 };
 
 #endif  // _STAR_HPP_

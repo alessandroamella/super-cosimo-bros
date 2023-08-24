@@ -33,10 +33,13 @@ class Player : public RigidEntity {
     InputManager& input_manager;
 
     List<Platform>& platforms;
-    List<Powerup>& powerups;
+    List<Powerup*>& powerups;
 
     int health;
     int coins;
+
+    bool is_damaged;
+    int damaged_ticks;
 
     bool has_powerup;
     EntityType powerup_type;
@@ -62,7 +65,7 @@ class Player : public RigidEntity {
            List<int> floor,
            List<int> ceiling,
            List<Platform>& platforms,
-           List<Powerup>& powerups);
+           List<Powerup*>& powerups);
 
     bool is_jumping;
     bool is_shooting;
@@ -82,6 +85,10 @@ class Player : public RigidEntity {
     bool get_has_powerup();
     EntityType get_powerup_type();
     void set_has_powerup(bool has_powerup);
+
+    bool get_is_damaged();
+    void set_is_damaged(bool is_damaged);
+    bool damaged_should_tick();
 
     // TODO sposta in private
     bool is_on_platform();

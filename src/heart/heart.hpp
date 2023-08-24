@@ -10,8 +10,8 @@ class Heart : public Powerup {
 
    public:
     Heart(Position position);
-    EntityType get_entity_type();
     const char* get_render_char();
+    EntityType get_entity_type() override;
 };
 
 #endif  // _HEART_HPP_
