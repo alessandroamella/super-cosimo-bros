@@ -2,7 +2,7 @@
 
 #include "../shared/functions.hpp"
 
-Room::Room(List<Powerup> powerups, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height)
+Room::Room(List<Powerup*> powerups, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height)
     : powerups(powerups), floor(floor), ceiling(ceiling), width(width), height(height), platforms(platforms), enemies(List<Enemy>()) {
     if (floor.length() != width)
         throw std::invalid_argument("floor room length must be equal to width");
@@ -64,7 +64,7 @@ int Room::get_height() {
     return height;
 }
 
-List<Powerup>& Room::get_powerups() {
+List<Powerup*>& Room::get_powerups() {
     return powerups;
 }
 

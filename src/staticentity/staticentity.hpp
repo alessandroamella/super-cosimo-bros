@@ -14,7 +14,7 @@ class StaticEntity {
    public:
     StaticEntity(Position position);
     Position get_position();
-    EntityType get_entity_type();
+    virtual EntityType get_entity_type();
 };
 
 #endif  // _STATICENTITY_HPP_

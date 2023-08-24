@@ -8,7 +8,7 @@ class Mushroom : public Powerup {
    private:
    public:
     Mushroom(Position position);
-    EntityType get_entity_type();
+    EntityType get_entity_type() override;
 };
 
 #endif  // _MUSHROOM_HPP_

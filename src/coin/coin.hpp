@@ -10,9 +10,9 @@ class Coin : public Powerup {
 
    public:
     Coin(Position position, int value);
-    EntityType get_entity_type();
     const char* get_render_char();
     int get_value();
+    EntityType get_entity_type() override;
 };
 
 #endif  // _COIN_HPP_

@@ -47,9 +47,13 @@ int main() {
     platforms.push(_platform3);
     platforms.push(_platform4);
 
-    List<Powerup> powerups;
-    powerups.push(Mushroom((Position){.x = 20, .y = 10}));
-    powerups.push(Mushroom((Position){.x = 42, .y = 29}));
+    List<Powerup*> powerups;
+
+    Mushroom p1 = Mushroom((Position){.x = 20, .y = 10});
+    Mushroom p2 = Mushroom((Position){.x = 42, .y = 29});
+
+    powerups.push(&p1);
+    powerups.push(&p2);
 
     Room test_room(powerups, floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT);
 
@@ -58,7 +62,7 @@ int main() {
 
     LevelManager level(&rooms, game_timer);
     Player player(game_timer, input_manager, (Position){.x = 10, .y = 10}, test_room.get_floor(), test_room.get_ceiling(), platforms, powerups);
-    GameRenderer game_renderer(player, level, game_timer, input_manager);
+    GameRenderer game_renderer(player, level, game_timer);
 
     game_timer.start();
     game_renderer.initialize();
@@ -67,14 +71,14 @@ int main() {
 
     game_renderer.render_2d_char_array(title, Alignment::Center, Alignment::Center);
 
-    game_renderer.wait_for_btn(' ');
+    input_manager.wait_for_btn(game_renderer.get_win(), ' ');
     game_renderer.clear_screen();
 
     level.place_enemies_randomly(2, 10);
     level.get_cur_room()->load();
 
     while (!quit) {
-        input_manager.read_input();
+        input_manager.read_input(game_renderer.get_win());
 
         if (game_timer.should_tick()) {
             player.tick();
@@ -89,6 +93,7 @@ int main() {
                     if (player.get_has_powerup()) {
                         switch (player.get_powerup_type()) {
                             case EntityType::Mushroom:
+                                player.set_is_damaged(true);
                                 player.set_has_powerup(false);
                                 break;
                             case EntityType::Star:
@@ -96,6 +101,7 @@ int main() {
                                 break;
                         }
                     } else {
+                        player.set_is_damaged(true);
                         player.remove_health(ENEMY_DAMAGE);
                         player.jump();
                     }
@@ -104,7 +110,7 @@ int main() {
 
             if (player.get_health() <= 0) {
                 game_renderer.render_2d_char_array(game_over, Alignment::Center, Alignment::Center);
-                game_renderer.wait_for_btn(' ');
+                input_manager.wait_for_btn(game_renderer.get_win(), ' ');
                 game_renderer.clear_screen();
                 player.set_health(PLAYER_STARTING_HEALTH);
                 player.reset_position();

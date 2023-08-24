@@ -14,6 +14,8 @@ class Powerup : public StaticBox {
     bool get_is_active();
     void set_is_active(bool is_active);
     const char* get_render_char();
+
+    EntityType get_entity_type() override;
 };
 
 #endif  // _POWERUP_HPP_
