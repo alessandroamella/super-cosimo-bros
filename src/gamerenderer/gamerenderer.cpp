@@ -17,8 +17,9 @@ GameRenderer::GameRenderer(Player* player, LevelManager* level_manager, GameTime
       level_manager(level_manager),
       game_timer(timer) {}
 
-GameRenderer::~GameRenderer() {
-    endwin();  // Chiudi la finestra ncurses alla distruzione dell'oggetto
+void GameRenderer::cleanup() {
+    delwin(win);
+    endwin();
 }
 
 void GameRenderer::initialize() {

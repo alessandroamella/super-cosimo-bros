@@ -65,37 +65,45 @@ void GameManager::game_over_screen() {
 void GameManager::main_loop() {
     bool should_continue = true;
 
-    while (should_continue) {
-        input_manager.read_input(game_renderer->get_win());
+    try {
+        while (should_continue) {
+            input_manager.read_input(game_renderer->get_win());
 
-        if (game_timer.should_tick()) {
-            tick_all();
-            game_renderer->render_all();
+            if (game_timer.should_tick()) {
+                tick_all();
+                game_renderer->render_all();
 
-            handle_enemy_collisions();
+                handle_enemy_collisions();
 
-            if (player->get_health() <= 0) {
-                // game over and wait for ' ' to restart
-                game_over_screen();
-                input_manager.wait_for_btn(game_renderer->get_win(), ' ');
-                game_renderer->clear_screen();
+                if (player->get_health() <= 0) {
+                    // game over and wait for ' ' to restart
+                    game_over_screen();
+                    input_manager.wait_for_btn(game_renderer->get_win(), ' ');
+                    game_renderer->clear_screen();
 
-                // restart game (reset player health and position, current room back to first room)
-                level->restart_from_first_room();
-                player->set_health(PLAYER_STARTING_HEALTH);
-                player->set_position(level->get_cur_room()->get_player_start_position());
+                    // restart game (reset player health and position, current room back to first room)
+                    level->restart_from_first_room();
+                    player->set_health(PLAYER_STARTING_HEALTH);
+                    player->set_position(level->get_cur_room()->get_player_start_position());
+                }
+
+                if (level->should_change_room()) {
+                    level->execute_room_change();
+                    game_renderer->clear_screen();
+                    player->set_position(level->get_cur_room()->get_player_start_position());
+                }
+
+                should_continue = !input_manager.is_key_pressed(QUIT_KEY);
+                input_manager.clear_input_buff();
             }
-
-            if (level->should_change_room()) {
-                level->execute_room_change();
-                game_renderer->clear_screen();
-                player->set_position(level->get_cur_room()->get_player_start_position());
-            }
-
-            should_continue = !input_manager.is_key_pressed(QUIT_KEY);
-            input_manager.clear_input_buff();
         }
+    } catch (const std::exception& e) {
+        game_renderer->cleanup();
+        std::cerr << e.what() << std::endl;
+        exit(EXIT_FAILURE);
     }
+
+    game_renderer->cleanup();
 }
 
 void GameManager::begin() {
