@@ -4,17 +4,17 @@
 #include "../shared/functions.hpp"
 #include "../shared/settings.hpp"
 
-bool collides(StaticEntity& a, StaticEntity& b) {
-    Position a_pos = a.get_position();
-    Position b_pos = b.get_position();
+bool collides(StaticEntity* a, StaticEntity* b) {
+    Position a_pos = a->get_position();
+    Position b_pos = b->get_position();
 
     bool collides_directly = a_pos.x == b_pos.x && a_pos.y == b_pos.y;
     if (collides_directly)
         return true;
 
-    if (a.get_entity_type() == EntityType::RigidEntity) {
-        auto a_rigid = (RigidEntity&)a;
-        auto a_vel = a_rigid.get_velocity();
+    RigidEntity* a_rigid = dynamic_cast<RigidEntity*>(a);
+    if (a_rigid != nullptr) {
+        auto a_vel = a_rigid->get_velocity();
 
         // check if a_rigid position + a_vel collides with b
         Position a_pos_plus_vel = {a_pos.x + a_vel.x, a_pos.y + a_vel.y};

@@ -2,8 +2,16 @@
 
 #include "../shared/functions.hpp"
 
-Room::Room(List<Powerup*> powerups, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height)
-    : powerups(powerups), floor(floor), ceiling(ceiling), width(width), height(height), platforms(platforms), enemies(List<Enemy>()) {
+Room::Room(List<Powerup*> powerups, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height, StaticBox start_region, StaticBox end_region)
+    : powerups(powerups),
+      floor(floor),
+      ceiling(ceiling),
+      width(width),
+      height(height),
+      platforms(platforms),
+      enemies(List<Enemy>()),
+      start_region(start_region),
+      end_region(end_region) {
     if (floor.length() != width)
         throw std::invalid_argument("floor room length must be equal to width");
 }
@@ -44,20 +52,18 @@ int Room::get_ceiling_at(int x) {
     return ceiling.at(x);
 }
 
-List<int>& Room::get_floor(){
-    return floor;
-}
+int Room::get_platform_at(int x) {
+    if (x < 0 || x >= width)
+        throw std::invalid_argument(
+            "get_platform_at: x=" + std::to_string(x) +
+            " must be in range [0, width=" + std::to_string(width) + ")");
 
- List<int>& Room::get_ceiling(){
-    return ceiling;
- }
+    for (int i = 0; i < platforms.length(); i++) {
+        if (platforms.at(i).is_x_within(x))
+            return platforms.at(i).get_top_y(x);
+    }
 
-List<Platform>& Room::get_platforms() {
-    return platforms;
-}
-
-int Room::get_width() {
-    return width;
+    return -1;
 }
 
 List<int>& Room::get_floor() {
@@ -66,6 +72,14 @@ List<int>& Room::get_floor() {
 
 List<int>& Room::get_ceiling() {
     return ceiling;
+}
+
+List<Platform>& Room::get_platforms() {
+    return platforms;
+}
+
+int Room::get_width() {
+    return width;
 }
 
 int Room::get_height() {
@@ -78,6 +92,18 @@ List<Powerup*>& Room::get_powerups() {
 
 List<Enemy>& Room::get_enemies() {
     return enemies;
+}
+
+StaticBox& Room::get_start_region() {
+    return start_region;
+}
+
+StaticBox& Room::get_end_region() {
+    return end_region;
+}
+
+Position Room::get_player_start_position() {
+    return (Position){.x = start_region.get_ur().x + PLAYER_START_POS_OFFSET, .y = start_region.get_position().y + 2};
 }
 
 void Room::add_enemy(Enemy enemy) {

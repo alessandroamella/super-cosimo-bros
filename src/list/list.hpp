@@ -13,7 +13,7 @@ class List {
         Node* next;
     };
     Node* head;
-    size_t size;
+    int size;
     bool is_out_of_range(int index);
 
    public:
@@ -25,7 +25,8 @@ class List {
     T& at(int index);
     bool contains(T data);
     void set(int index, T data);
-    size_t length();
+    int length();
+    void clear();
     void print();
 };
 
@@ -55,6 +56,9 @@ void List<T>::push(T data) {
 
 template <typename T>
 T List<T>::pop(int index) {
+    if (index < 0)
+        index = size + index;
+
     if (is_out_of_range(index))
         throw std::out_of_range("pop: index out of range");
 
@@ -116,14 +120,21 @@ void List<T>::set(int index, T data) {
 }
 
 template <typename T>
-size_t List<T>::length() {
+int List<T>::length() {
     return size;
+}
+
+template <typename T>
+inline void List<T>::clear() {
+    while (size > 0) {
+        pop(0);
+    }
 }
 
 template <typename T>
 void List<T>::print() {
     std::cout << "[ ";
-    for (size_t i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++) {
         std::cout << at(i);
         if (i != size - 1)
             std::cout << ", ";

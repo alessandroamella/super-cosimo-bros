@@ -7,7 +7,8 @@
 RigidEntity::RigidEntity(GameTimer& timer,
                          Position position,
                          List<int> floor,
-                         List<int> ceiling)
+                         List<int> ceiling,
+                         List<Platform>& platforms)
     : StaticEntity(position),
       game_timer(timer),
       starting_position(position),
@@ -16,7 +17,8 @@ RigidEntity::RigidEntity(GameTimer& timer,
       vel_y(RIGIDBODY_STARTING_VEL_Y),
       floor(floor),
       ceiling(ceiling),
-      type(EntityType::RigidEntity) {}
+      type(EntityType::RigidEntity),
+      platforms(platforms) {}
 
 void RigidEntity::move_left() {
     vel_x = -PLAYER_WALK_VEL;
@@ -47,6 +49,17 @@ bool RigidEntity::has_wall_on_left() {
 
 bool RigidEntity::has_wall_on_right() {
     return position.x >= GAME_WIDTH - 1 || position.y < floor.at(position.x);
+}
+
+bool RigidEntity::is_on_platform() {
+    for (int i = 0; i < platforms.length(); i++) {
+        Platform& platform = platforms.at(i);
+
+        if (platform.is_on_top(position))
+            return true;
+    }
+
+    return false;
 }
 
 void RigidEntity::clamp_position() {

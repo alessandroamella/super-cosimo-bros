@@ -5,6 +5,7 @@
 
 #include "../gametimer/gametimer.hpp"
 #include "../list/list.hpp"
+#include "../platform/platform.hpp"
 #include "../shared/position.hpp"
 #include "../shared/settings.hpp"
 #include "../staticentity/staticentity.hpp"
@@ -20,6 +21,8 @@ class RigidEntity : public StaticEntity {
 
     Position starting_position;
 
+    List<Platform>& platforms;
+
     void apply_gravity();
     void move_based_on_vel();
 
@@ -30,7 +33,7 @@ class RigidEntity : public StaticEntity {
     void clamp_velocity();
 
    public:
-    RigidEntity(GameTimer& timer, Position position, List<int> floor, List<int> ceiling);
+    RigidEntity(GameTimer& timer, Position position, List<int> floor, List<int> ceiling, List<Platform>& platforms);
     Position get_last_position();
     void reset_position();
     Position get_velocity();
@@ -41,6 +44,7 @@ class RigidEntity : public StaticEntity {
     bool is_touching_ceiling();
     bool has_wall_on_left();
     bool has_wall_on_right();
+    bool is_on_platform();
     int vel_x;
     int vel_y;
     Position last_position;

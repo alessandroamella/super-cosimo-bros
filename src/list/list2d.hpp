@@ -14,7 +14,7 @@ class List2D {
     List2D(int rows, int cols);
     T at(int row, int col);
     void set(int row, int col, T data);
-    size_t length();
+    int length();
     void print();
 };
 
@@ -41,15 +41,15 @@ void List2D<T>::set(int row, int col, T data) {
 }
 
 template <typename T>
-size_t List2D<T>::length() {
-    return (size_t)(rows * cols);
+int List2D<T>::length() {
+    return (int)(rows * cols);
 }
 
 template <typename T>
 void List2D<T>::print() {
     std::cout << "[";
     std::cout << std::endl;
-    for (size_t i = 0; i < rows; i++) {
+    for (int i = 0; i < rows; i++) {
         std::cout << "    ";
         list.at(i).print();
         std::cout << std::endl;

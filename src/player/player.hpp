@@ -32,7 +32,6 @@ class Player : public RigidEntity {
 
     InputManager& input_manager;
 
-    List<Platform>& platforms;
     List<Powerup*>& powerups;
 
     int health;
@@ -90,10 +89,12 @@ class Player : public RigidEntity {
     void set_is_damaged(bool is_damaged);
     bool damaged_should_tick();
 
-    // TODO sposta in private
-    bool is_on_platform();
+    void refresh(Position position,
+                 List<int> floor,
+                 List<int> ceiling,
+                 List<Platform>& platforms,
+                 List<Powerup*>& powerups);
 
-    // overrides
     void tick();
 };
 
