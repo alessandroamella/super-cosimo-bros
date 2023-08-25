@@ -3,14 +3,15 @@
 #include <cstring>
 #include <iostream>
 
-#define WHITE_TEXT 1
+#define TEXT_WHITE 1
 #define BG_WHITE 2
 #define BG_BLUE 3
 #define BG_MAGENTA 4
-#define RED_TEXT 5
-#define YELLOW_TEXT 6
-#define BLUE_TEXT 7
-#define GREEN_TEXT 8
+#define BG_YELLOW 5
+#define TEXT_RED 6
+#define TEXT_YELLOW 7
+#define TEXT_BLUE 8
+#define TEXT_GREEN 9
 
 GameRenderer::GameRenderer(Player* player, LevelManager* level_manager, GameTimer* timer)
     : player(player),
@@ -26,14 +27,15 @@ void GameRenderer::initialize() {
     int width, height;
     initscr();                                          // Inizializza la finestra ncurses
     start_color();                                      // Abilita il sistema di colori
-    init_pair(WHITE_TEXT, COLOR_WHITE, COLOR_BLACK);    // Testo bianco su sfondo nero (id, foreground, background)
+    init_pair(TEXT_WHITE, COLOR_WHITE, COLOR_BLACK);    // Testo bianco su sfondo nero (id, foreground, background)
     init_pair(BG_WHITE, COLOR_BLACK, COLOR_WHITE);      //
     init_pair(BG_BLUE, COLOR_BLACK, COLOR_BLUE);        //
     init_pair(BG_MAGENTA, COLOR_BLACK, COLOR_MAGENTA);  //
-    init_pair(RED_TEXT, COLOR_RED, COLOR_BLACK);        //
-    init_pair(YELLOW_TEXT, COLOR_YELLOW, COLOR_BLACK);  //
-    init_pair(BLUE_TEXT, COLOR_BLUE, COLOR_BLACK);      //
-    init_pair(GREEN_TEXT, COLOR_GREEN, COLOR_BLACK);    //
+    init_pair(BG_YELLOW, COLOR_BLACK, COLOR_YELLOW);    //
+    init_pair(TEXT_RED, COLOR_RED, COLOR_BLACK);        //
+    init_pair(TEXT_YELLOW, COLOR_YELLOW, COLOR_BLACK);  //
+    init_pair(TEXT_BLUE, COLOR_BLUE, COLOR_BLACK);      //
+    init_pair(TEXT_GREEN, COLOR_GREEN, COLOR_BLACK);    //
     timeout(-1);                                        // Disabilita timeout di getch
     cbreak();                                           // Disabilita il buffering del tasto Invio
     raw();                                              // Disabilita il buffer di input line-by-line
@@ -87,15 +89,20 @@ void GameRenderer::render_player() {
     render_str(last_player_pos, " ");
 
     bool player_has_mushroom = player->get_has_powerup() && player->get_powerup_type() == EntityType::Mushroom;
+    bool player_has_star = player->has_star() && player->should_show_star();
 
     if (player->get_is_damaged() && player->damaged_should_tick()) {
-        wattron(win, COLOR_PAIR(RED_TEXT));
+        wattron(win, COLOR_PAIR(TEXT_RED));
         render_str(player_pos, player_has_mushroom ? PLAYER_POWERUP_RENDER_CHARACTER : PLAYER_RENDER_CHARACTER);
-        wattroff(win, COLOR_PAIR(RED_TEXT));
+        wattroff(win, COLOR_PAIR(TEXT_RED));
     } else if (player_has_mushroom) {
-        wattron(win, COLOR_PAIR(YELLOW_TEXT));
+        wattron(win, COLOR_PAIR(TEXT_YELLOW));
         render_str(player_pos, PLAYER_POWERUP_RENDER_CHARACTER);
-        wattroff(win, COLOR_PAIR(YELLOW_TEXT));
+        wattroff(win, COLOR_PAIR(TEXT_YELLOW));
+    } else if (player_has_star) {
+        wattron(win, COLOR_PAIR(TEXT_YELLOW));
+        render_str(player_pos, PLAYER_RENDER_CHARACTER);
+        wattroff(win, COLOR_PAIR(TEXT_YELLOW));
     } else {
         render_str(player_pos, PLAYER_RENDER_CHARACTER);
     }
@@ -129,9 +136,9 @@ void GameRenderer::render_powerups() {
         Position char_pos = (Position){.x = powerup_pos.x + 2, .y = powerup_pos.y - 1};
 
         bool is_active = powerup->get_is_active();
-        wattron(win, COLOR_PAIR(is_active ? YELLOW_TEXT : RED_TEXT));
+        wattron(win, COLOR_PAIR(is_active ? TEXT_YELLOW : TEXT_RED));
         render_str(char_pos, powerup->get_is_active() ? powerup->get_render_char() : POWERUP_RENDER_DISABLED_CHARACTER);
-        wattroff(win, COLOR_PAIR(is_active ? YELLOW_TEXT : RED_TEXT));
+        wattroff(win, COLOR_PAIR(is_active ? TEXT_YELLOW : TEXT_RED));
     }
 }
 
@@ -172,14 +179,13 @@ void GameRenderer::render_platforms() {
 void GameRenderer::render_start_end_regions() {
     // render start region
 
-    // TODO decommenta l'if per nascondere la start region al primo livello
-    // if (level_manager->get_visited_rooms_count() > 1) {
-    wattron(win, COLOR_PAIR(BG_BLUE));
-    empty_rectangle(
-        level_manager->get_cur_room()->get_start_region().get_position(),
-        level_manager->get_cur_room()->get_start_region().get_ur());
-    wattroff(win, COLOR_PAIR(BG_BLUE));
-    // }
+    if (level_manager->get_visited_rooms_count() > 1) {
+        wattron(win, COLOR_PAIR(BG_BLUE));
+        empty_rectangle(
+            level_manager->get_cur_room()->get_start_region().get_position(),
+            level_manager->get_cur_room()->get_start_region().get_ur());
+        wattroff(win, COLOR_PAIR(BG_BLUE));
+    }
 
     // render end region
     wattron(win, COLOR_PAIR(BG_MAGENTA));
@@ -187,6 +193,10 @@ void GameRenderer::render_start_end_regions() {
         level_manager->get_cur_room()->get_end_region().get_position(),
         level_manager->get_cur_room()->get_end_region().get_ur());
     wattroff(win, COLOR_PAIR(BG_MAGENTA));
+}
+
+void GameRenderer::clear_point(Position position) {
+    render_str(position, " ");
 }
 
 void GameRenderer::clear_screen() {
@@ -216,16 +226,16 @@ void GameRenderer::render_str(Position _position, const char* str) const {
 
 void GameRenderer::render_str_num(Position position, const char* str, int number) const {
     render_str(position, str);
-    wattron(win, COLOR_PAIR(YELLOW_TEXT));
+    wattron(win, COLOR_PAIR(TEXT_YELLOW));
     wprintw(win, " %d  ", number);
-    wattroff(win, COLOR_PAIR(YELLOW_TEXT));
+    wattroff(win, COLOR_PAIR(TEXT_YELLOW));
 }
 
 void GameRenderer::render_all() {
     // render_debug_status();
     render_top_bar();
-    render_start_end_regions();
     render_powerups();
+    render_start_end_regions();
     render_player();
     render_enemies();
     render_floor();
@@ -269,7 +279,7 @@ void GameRenderer::render_2d_char_array(List<const char*> text, Alignment h_alig
 }
 
 void GameRenderer::render_floor() {
-    wattron(win, COLOR_PAIR(GREEN_TEXT));
+    wattron(win, COLOR_PAIR(TEXT_GREEN));
 
     Position prev_native_pos = translate_position((Position){.x = 0, .y = level_manager->get_cur_room()->get_floor_at(0)});
 
@@ -306,14 +316,14 @@ void GameRenderer::render_floor() {
         prev_native_pos = (Position){.x = i, .y = native_height};
     }
 
-    wattroff(win, COLOR_PAIR(GREEN_TEXT));
+    wattroff(win, COLOR_PAIR(TEXT_GREEN));
 }
 
 void GameRenderer::render_top_bar() {
     // salute
     render_str((Position){.x = 6, .y = GAME_HEIGHT - 2}, PLAYER_NAME);
 
-    wattron(win, COLOR_PAIR(RED_TEXT));
+    wattron(win, COLOR_PAIR(TEXT_RED));
 
     int health = player->get_health();
     int full_hearts = health / 10;
@@ -323,7 +333,7 @@ void GameRenderer::render_top_bar() {
         render_str((Position){.x = 5 + i, .y = GAME_HEIGHT - 3}, "o");
     }
 
-    wattroff(win, COLOR_PAIR(RED_TEXT));
+    wattroff(win, COLOR_PAIR(TEXT_RED));
 
     for (int i = 0; i < empty_hearts; i++) {
         render_str((Position){.x = 5 + (full_hearts + i), .y = GAME_HEIGHT - 3}, "o");
@@ -331,30 +341,33 @@ void GameRenderer::render_top_bar() {
 
     // monete
     render_str((Position){.x = 30, .y = GAME_HEIGHT - 2}, "Coins");
-    wattron(win, COLOR_PAIR(YELLOW_TEXT));
+    wattron(win, COLOR_PAIR(TEXT_YELLOW));
     render_str_num((Position){.x = 31, .y = GAME_HEIGHT - 3}, "", player->get_coins());
-    wattroff(win, COLOR_PAIR(YELLOW_TEXT));
+    wattroff(win, COLOR_PAIR(TEXT_YELLOW));
 
     // difficolta
     render_str((Position){.x = 50, .y = GAME_HEIGHT - 2}, "Difficulty");
-    wattron(win, COLOR_PAIR(YELLOW_TEXT));
-    render_str_num((Position){.x = 53, .y = GAME_HEIGHT - 3}, "", level_manager->get_difficulty());
-    wattroff(win, COLOR_PAIR(YELLOW_TEXT));
+    wattron(win, COLOR_PAIR(TEXT_YELLOW));
+    render_str_num((Position){.x = 53, .y = GAME_HEIGHT - 3}, "", level_manager->get_cur_difficulty());
+    wattroff(win, COLOR_PAIR(TEXT_YELLOW));
 
     // TODO remove debug
     // debug: print player coordinates
-    render_str_num((Position){.x = 70, .y = GAME_HEIGHT - 2}, "x", (int)player->get_position().x);
-    render_str_num((Position){.x = 70, .y = GAME_HEIGHT - 3}, "y", (int)player->get_position().y);
+    // render_str_num((Position){.x = 70, .y = GAME_HEIGHT - 2}, "x", (int)player->get_position().x);
+    // render_str_num((Position){.x = 70, .y = GAME_HEIGHT - 3}, "y", (int)player->get_position().y);
+
+    // debug: print health num
+    // render_str_num((Position){.x = 68, .y = GAME_HEIGHT - 5}, "health", (int)player->get_health());
 
     // print start end regions
-    render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 2}, "start_x from", (int)level_manager->get_cur_room()->get_start_region().get_position().x);
-    render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 3}, "start_y from", (int)level_manager->get_cur_room()->get_start_region().get_position().y);
-    render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 4}, "start_x to", (int)level_manager->get_cur_room()->get_start_region().get_ur().x);
-    render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 5}, "start_y to", (int)level_manager->get_cur_room()->get_start_region().get_ur().y);
-    render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 2}, "end_x from", (int)level_manager->get_cur_room()->get_end_region().get_position().x);
-    render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 3}, "end_y from", (int)level_manager->get_cur_room()->get_end_region().get_position().y);
-    render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 4}, "end_x to", (int)level_manager->get_cur_room()->get_end_region().get_ur().x);
-    render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 5}, "end_y to", (int)level_manager->get_cur_room()->get_end_region().get_ur().y);
+    // render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 2}, "start_x from", (int)level_manager->get_cur_room()->get_start_region().get_position().x);
+    // render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 3}, "start_y from", (int)level_manager->get_cur_room()->get_start_region().get_position().y);
+    // render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 4}, "start_x to", (int)level_manager->get_cur_room()->get_start_region().get_ur().x);
+    // render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 5}, "start_y to", (int)level_manager->get_cur_room()->get_start_region().get_ur().y);
+    // render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 2}, "end_x from", (int)level_manager->get_cur_room()->get_end_region().get_position().x);
+    // render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 3}, "end_y from", (int)level_manager->get_cur_room()->get_end_region().get_position().y);
+    // render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 4}, "end_x to", (int)level_manager->get_cur_room()->get_end_region().get_ur().x);
+    // render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 5}, "end_y to", (int)level_manager->get_cur_room()->get_end_region().get_ur().y);
 }
 
 void GameRenderer::render_debug_status() {

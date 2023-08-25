@@ -45,6 +45,8 @@ class GameRenderer {
 
     void render_2d_char_array(List<const char*> text, Alignment h_align, Alignment v_align);
     void render_str_num(Position position, const char* str, int number) const;
+
+    void clear_point(Position position);
     void clear_screen();
 
     WINDOW* get_win() const;

@@ -30,9 +30,9 @@ class Player : public RigidEntity {
         Shoot = (int)'e'
     };
 
-    InputManager& input_manager;
+    InputManager* input_manager;
 
-    List<Powerup*>& powerups;
+    List<Powerup*>* powerups;
 
     int health;
     int coins;
@@ -54,17 +54,20 @@ class Player : public RigidEntity {
     void run_right();
     void shoot();
 
-    // overrides
+    int star_ticks;
+    std::chrono::steady_clock::time_point star_expires_at;
+    void tick_star();
+
     void apply_gravity();
 
    public:
-    Player(GameTimer& timer,
-           InputManager& input_manager,
+    Player(GameTimer* timer,
+           InputManager* input_manager,
            Position position,
-           List<int> floor,
-           List<int> ceiling,
-           List<Platform>& platforms,
-           List<Powerup*>& powerups);
+           List<int>* floor,
+           List<int>* ceiling,
+           List<Platform>* platforms,
+           List<Powerup*>* powerups);
 
     bool is_jumping;
     bool is_shooting;
@@ -89,11 +92,14 @@ class Player : public RigidEntity {
     void set_is_damaged(bool is_damaged);
     bool damaged_should_tick();
 
+    bool has_star();
+    bool should_show_star();
+
     void refresh(Position position,
-                 List<int> floor,
-                 List<int> ceiling,
-                 List<Platform>& platforms,
-                 List<Powerup*>& powerups);
+                 List<int>* floor,
+                 List<int>* ceiling,
+                 List<Platform>* platforms,
+                 List<Powerup*>* powerups);
 
     void tick();
 };

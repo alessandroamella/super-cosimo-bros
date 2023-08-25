@@ -5,16 +5,17 @@ GameManager::GameManager()
       input_manager(),
       game_maps(),
       ascii_texts() {
-    rooms = List<Room>();
-    rooms.push(game_maps.layout1());
-    rooms.push(game_maps.layout2());
-    rooms.push(game_maps.layout3());
+    rooms = List<Room*>();
+
+    rooms.push(game_maps.get_room(0));
+    rooms.push(game_maps.get_room(1));
+    rooms.push(game_maps.get_room(2));
 
     powerups = List<Powerup*>();
 
-    level = new LevelManager(&rooms, game_timer);
+    level = new LevelManager(&rooms, &game_timer);
 
-    player = new Player(game_timer, input_manager, level->get_cur_room()->get_player_start_position(), level->get_cur_room()->get_floor(), level->get_cur_room()->get_ceiling(), level->get_cur_room()->get_platforms(), powerups);
+    player = new Player(&game_timer, &input_manager, level->get_cur_room()->get_player_start_position(), &level->get_cur_room()->get_floor(), &level->get_cur_room()->get_ceiling(), &level->get_cur_room()->get_platforms(), &powerups);
 
     game_renderer = new GameRenderer(player, level, &game_timer);
 
@@ -27,11 +28,6 @@ void GameManager::splash_screen() {
 
     input_manager.wait_for_btn(game_renderer->get_win(), ' ');
     game_renderer->clear_screen();
-}
-
-void GameManager::tick_all() {
-    player->tick();
-    level->tick(player->get_position());
 }
 
 void GameManager::handle_enemy_collisions() {
@@ -47,6 +43,7 @@ void GameManager::handle_enemy_collisions() {
                         break;
                     case EntityType::Star:
                         enemy.set_is_dead(true);
+                        game_renderer->clear_point(enemy.get_position());
                         break;
                 }
             } else {
@@ -70,7 +67,8 @@ void GameManager::main_loop() {
             input_manager.read_input(game_renderer->get_win());
 
             if (game_timer.should_tick()) {
-                tick_all();
+                player->tick();
+                level->tick(player->get_position());
                 game_renderer->render_all();
 
                 handle_enemy_collisions();
@@ -89,8 +87,11 @@ void GameManager::main_loop() {
 
                 if (level->should_change_room()) {
                     level->execute_room_change();
+
+                    Room* cur_room = level->get_cur_room();
+                    player->refresh(cur_room->get_player_start_position(), &cur_room->get_floor(), &cur_room->get_ceiling(), &cur_room->get_platforms(), &cur_room->get_powerups());
+
                     game_renderer->clear_screen();
-                    player->set_position(level->get_cur_room()->get_player_start_position());
                 }
 
                 should_continue = !input_manager.is_key_pressed(QUIT_KEY);
@@ -98,17 +99,34 @@ void GameManager::main_loop() {
             }
         }
     } catch (const std::exception& e) {
-        game_renderer->cleanup();
+        cleanup();
         std::cerr << e.what() << std::endl;
         exit(EXIT_FAILURE);
     }
-
-    game_renderer->cleanup();
 }
 
 void GameManager::begin() {
+    std::srand(std::time(nullptr));
+
     splash_screen();  // wait for ' ' to start
     level->load_first_room();
 
     main_loop();
+}
+
+void GameManager::cleanup() {
+    game_renderer->cleanup();
+    level->cleanup();
+
+    delete level;
+    delete player;
+    delete game_renderer;
+
+    for (int i = 0; i < rooms.length(); i++) {
+        delete rooms.at(i);
+    }
+
+    for (int i = 0; i < powerups.length(); i++) {
+        delete powerups.at(i);
+    }
 }

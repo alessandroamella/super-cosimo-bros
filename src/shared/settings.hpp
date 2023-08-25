@@ -42,6 +42,9 @@
 
 #define PLAYER_START_POS_OFFSET 5
 #define ENEMY_DISTANCE_FROM_START 20
+#define POWERUP_DISTANCE_FROM_START 10
+
+#define STAR_POWERUP_DURATION_SECONDS 10
 
 #define STARTING_DIFFICULTY 1
 
@@ -53,6 +56,7 @@ enum class EntityType {
     Star,
     Heart,
     Coin,
+    Gun
 };
 
 #endif  // _SETTINGS_HPP_

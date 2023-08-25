@@ -7,13 +7,13 @@
 #include "../shared/functions.hpp"
 #include "../star/star.hpp"
 
-Player::Player(GameTimer& timer,
-               InputManager& input_manager,
+Player::Player(GameTimer* timer,
+               InputManager* input_manager,
                Position position,
-               List<int> floor,
-               List<int> ceiling,
-               List<Platform>& platforms,
-               List<Powerup*>& powerups)
+               List<int>* floor,
+               List<int>* ceiling,
+               List<Platform>* platforms,
+               List<Powerup*>* powerups)
     : RigidEntity(timer, position, floor, ceiling, platforms),
       input_manager(input_manager),
       is_jumping(false),
@@ -61,21 +61,21 @@ void Player::update_jump_position() {
 }
 
 void Player::process_input() {
-    if (input_manager.is_key_pressed((int)PlayerControls::Jump) && (is_on_floor() || is_on_platform()))
+    if (input_manager->is_key_pressed((int)PlayerControls::Jump) && (is_on_floor() || is_on_platform()))
         jump();
 
-    if (input_manager.is_key_pressed((int)PlayerControls::RunLeft))
+    if (input_manager->is_key_pressed((int)PlayerControls::RunLeft))
         run_left();
-    else if (input_manager.is_key_pressed((int)PlayerControls::WalkLeft))
+    else if (input_manager->is_key_pressed((int)PlayerControls::WalkLeft))
         move_left();
-    else if (input_manager.is_key_pressed((int)PlayerControls::RunRight))
+    else if (input_manager->is_key_pressed((int)PlayerControls::RunRight))
         run_right();
-    else if (input_manager.is_key_pressed((int)PlayerControls::WalkRight))
+    else if (input_manager->is_key_pressed((int)PlayerControls::WalkRight))
         move_right();
     else if (!is_jumping)
         apply_friction();
 
-    if (input_manager.is_key_pressed((int)PlayerControls::Shoot))
+    if (input_manager->is_key_pressed((int)PlayerControls::Shoot))
         shoot();
 }
 
@@ -110,7 +110,7 @@ int Player::get_health() {
 }
 
 void Player::add_health(int amount) {
-    health = std::max(health + amount, PLAYER_MAX_HEALTH);
+    health = std::min(health + amount, PLAYER_MAX_HEALTH);
 }
 
 void Player::set_health(int amount) {
@@ -149,12 +149,34 @@ bool Player::damaged_should_tick() {
     return damaged_ticks % PLAYER_DAMAGED_BLINK_TICKS == 0;
 }
 
-void Player::refresh(Position _position, List<int> _floor, List<int> _ceiling, List<Platform>& _platforms, List<Powerup*>& _powerups) {
-    position = _position;
-    floor = _floor;
-    ceiling = _ceiling;
-    platforms = _platforms;
-    powerups = _powerups;
+bool Player::has_star() {
+    return has_powerup && powerup_type == EntityType::Star;
+}
+
+bool Player::should_show_star() {
+    return star_ticks % 2 == 0;
+}
+
+void Player::tick_star() {
+    if (!has_star())
+        return;
+
+    if (std::chrono::steady_clock::now() > star_expires_at) {
+        has_powerup = false;
+        star_ticks = 0;
+    } else {
+        star_ticks++;
+    }
+}
+
+void Player::refresh(Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms, List<Powerup*>* powerups) {
+    this->position = position;
+    this->floor = floor;
+    this->ceiling = ceiling;
+    this->platforms = platforms;
+    this->powerups = powerups;
+    vel_x = 0;
+    vel_y = 0;
 }
 
 EntityType Player::get_powerup_type() {
@@ -174,9 +196,9 @@ void Player::remove_coins(int amount) {
 }
 
 void Player::handle_platform_collisions() {
-    for (int i = 0; i < platforms.length(); i++) {
-        Platform& platform = platforms.at(i);
-        Position after_pos = (Position){.x = position.x + vel_x, .y = position.y + vel_y};
+    for (int i = 0; i < platforms->length(); i++) {
+        Platform& platform = platforms->at(i);
+        Position after_pos = get_after_pos();
 
         if (platform.is_touching_ceiling(position)) {
             vel_y = std::min(vel_y, 0);
@@ -204,17 +226,17 @@ void Player::handle_platform_collisions() {
 }
 
 void Player::handle_powerup_collisions() {
-    for (int i = 0; i < powerups.length(); i++) {
+    for (int i = 0; i < powerups->length(); i++) {
         // giusto per stare sicuri
-        if (powerups.at(i) == nullptr)
+        if (powerups->at(i) == nullptr)
             throw std::runtime_error("Null pointer exception at Player::handle_powerup_collisions()");
 
-        Powerup* powerup = powerups.at(i);
+        Powerup* powerup = powerups->at(i);
         // check null pointer
 
-        Position after_pos = (Position){.x = position.x + vel_x, .y = position.y + vel_y};
+        Position after_pos = get_after_pos();
 
-        if (powerup->is_inside(after_pos) || (powerup->is_below(position) && (powerup->is_above(after_pos) || powerup->is_inside(after_pos))) || (powerup->is_above(position) && (powerup->is_below(after_pos) || powerup->is_inside(after_pos)))) {
+        if (powerup->get_is_active() && (powerup->is_inside(after_pos) || (powerup->is_below(position) && (powerup->is_above(after_pos) || powerup->is_inside(after_pos))) || (powerup->is_above(position) && (powerup->is_below(after_pos) || powerup->is_inside(after_pos))))) {
             switch (powerup->get_entity_type()) {
                 case EntityType::Mushroom:
                     has_powerup = has_powerup || powerup->get_is_active();
@@ -223,6 +245,8 @@ void Player::handle_powerup_collisions() {
                 case EntityType::Star:
                     has_powerup = has_powerup || powerup->get_is_active();
                     powerup_type = powerup->get_entity_type();
+                    star_ticks = 0;
+                    star_expires_at = std::chrono::steady_clock::now() + std::chrono::seconds(STAR_POWERUP_DURATION_SECONDS);
                     break;
                 case EntityType::Heart:
                     add_health(HEART_HEALTH_INCREASE);
@@ -258,6 +282,9 @@ void Player::tick() {
     handle_powerup_collisions();
     move_based_on_vel();
     clamp_position();
+
+    if (has_star())
+        tick_star();
 
     last_position = cur_pos;
 }

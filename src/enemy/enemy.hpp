@@ -19,10 +19,13 @@ class Enemy : public RigidEntity {
     bool should_change_direction();
     void change_direction();
 
-    Position get_after_pos();
+    bool has_wall_on_left();
+    bool has_wall_on_right();
+    bool has_pit();
+    bool collides_with_platform();
 
    public:
-    Enemy(GameTimer& timer, Position position, List<int> floor, List<int> ceiling, List<Platform>& platforms);
+    Enemy(GameTimer* timer, Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms);
 
     int get_health();
     void remove_health();
@@ -35,13 +38,6 @@ class Enemy : public RigidEntity {
 
     // overrides
     void tick();
-
-    // TODO sposta in private dopo debug
-    bool has_wall_on_left();
-    bool has_wall_on_right();
-    bool has_pit_on_left();
-    bool has_pit_on_right();
-    bool collides_with_platform();
 };
 
 #endif  // _ENEMY_HPP_

@@ -23,7 +23,7 @@ class GameManager {
     InputManager input_manager;
 
     Maps game_maps;
-    List<Room> rooms;
+    List<Room*> rooms;
     List<Powerup*> powerups;
 
     LevelManager* level;
@@ -33,7 +33,6 @@ class GameManager {
     AsciiTexts ascii_texts;
 
     void splash_screen();
-    void tick_all();
     void handle_enemy_collisions();
     void game_over_screen();
     void main_loop();
@@ -41,6 +40,7 @@ class GameManager {
    public:
     GameManager();
     void begin();
+    void cleanup();
 };
 
 #endif  // _GAMEMANAGER_HPP_

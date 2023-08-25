@@ -4,11 +4,11 @@
 
 #include "../shared/functions.hpp"
 
-RigidEntity::RigidEntity(GameTimer& timer,
+RigidEntity::RigidEntity(GameTimer* timer,
                          Position position,
-                         List<int> floor,
-                         List<int> ceiling,
-                         List<Platform>& platforms)
+                         List<int>* floor,
+                         List<int>* ceiling,
+                         List<Platform>* platforms)
     : StaticEntity(position),
       game_timer(timer),
       starting_position(position),
@@ -36,24 +36,28 @@ void RigidEntity::apply_friction() {
 }
 
 bool RigidEntity::is_on_floor() {
-    return position.y - 1 <= floor.at(position.x);
+    return position.y - 1 <= floor->at(position.x);
 }
 
 bool RigidEntity::is_touching_ceiling() {
-    return position.y - 1 >= ceiling.at(position.x);
+    return position.y - 1 >= ceiling->at(position.x);
+}
+
+Position RigidEntity::get_after_pos() {
+    return (Position){.x = position.x + vel_x, .y = position.y + vel_y};
 }
 
 bool RigidEntity::has_wall_on_left() {
-    return position.x < 1 || floor.at(position.x - 1) > position.y;
+    return position.x < 1 || floor->at(position.x - 1) > position.y;
 }
 
 bool RigidEntity::has_wall_on_right() {
-    return position.x >= GAME_WIDTH - 1 || position.y < floor.at(position.x);
+    return position.x >= GAME_WIDTH - 1 || position.y < floor->at(position.x);
 }
 
 bool RigidEntity::is_on_platform() {
-    for (int i = 0; i < platforms.length(); i++) {
-        Platform& platform = platforms.at(i);
+    for (int i = 0; i < platforms->length(); i++) {
+        Platform& platform = platforms->at(i);
 
         if (platform.is_on_top(position))
             return true;
@@ -77,12 +81,14 @@ void RigidEntity::clamp_position() {
     position.y = clamp(position.y, 1, GAME_HEIGHT - 1);
 
     if (is_on_floor())
-        position.y = floor.at(position.x) + 1;
+        position.y = floor->at(position.x) + 1;
 }
 
 void RigidEntity::apply_gravity() {
-    if (is_on_floor())
-        vel_y = 0;
+    // if (is_jumping)
+    //     update_jump_position();
+    if (is_on_floor() || is_on_platform())
+        vel_y = std::max(0, vel_y);
     else
         vel_y--;
 
@@ -100,9 +106,9 @@ void RigidEntity::clamp_velocity() {
     vel_x = clamp(vel_x, -MAX_ABS_X_VEL, MAX_ABS_X_VEL);
     vel_y = clamp(vel_y, MAX_FALL_VEL, MAX_JUMP_VEL);
 
-    while (vel_x >= 0 && (position.x + vel_x >= GAME_WIDTH - 1 || floor.at(position.x + vel_x) > position.y))
+    while (vel_x >= 0 && (position.x + vel_x >= GAME_WIDTH - 1 || floor->at(position.x + vel_x) > position.y))
         vel_x--;
-    while (vel_x <= 0 && (position.x + vel_x <= 1 || floor.at(position.x + vel_x - 1) > position.y))
+    while (vel_x <= 0 && (position.x + vel_x <= 1 || floor->at(position.x + vel_x - 1) > position.y))
         vel_x++;
 
     if (has_wall_on_left() && vel_x < 0)
