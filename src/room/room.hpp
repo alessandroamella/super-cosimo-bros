@@ -21,11 +21,15 @@ class Room {
     List<Powerup*> powerups;
     List<Enemy> enemies;
 
+    StaticBox start_region;
+    StaticBox end_region;
+
    public:
-    Room(List<Powerup*> powerups, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height);
+    Room(List<Powerup*> powerups, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height, StaticBox start_region, StaticBox end_region);
 
     int get_floor_at(int x);
     int get_ceiling_at(int x);
+    int get_platform_at(int x);
 
     List<int>& get_floor();
     List<int>& get_ceiling();
@@ -39,6 +43,11 @@ class Room {
 
     List<Powerup*>& get_powerups();
     List<Enemy>& get_enemies();
+
+    StaticBox& get_start_region();
+    StaticBox& get_end_region();
+
+    Position get_player_start_position();
 
     bool is_within_bounds(Position position);
 

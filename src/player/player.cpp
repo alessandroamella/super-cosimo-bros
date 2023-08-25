@@ -14,14 +14,13 @@ Player::Player(GameTimer& timer,
                List<int> ceiling,
                List<Platform>& platforms,
                List<Powerup*>& powerups)
-    : RigidEntity(timer, position, floor, ceiling),
+    : RigidEntity(timer, position, floor, ceiling, platforms),
       input_manager(input_manager),
       is_jumping(false),
       is_shooting(false),
       has_powerup(false),
       health(PLAYER_STARTING_HEALTH),
       coins(0),
-      platforms(platforms),
       powerups(powerups),
       is_damaged(false),
       damaged_ticks(0) {}
@@ -86,17 +85,6 @@ void Player::shoot() {
     // TODO
 }
 
-bool Player::is_on_platform() {
-    for (int i = 0; i < platforms.length(); i++) {
-        Platform& platform = platforms.at(i);
-
-        if (platform.is_on_top(position))
-            return true;
-    }
-
-    return false;
-}
-
 // override: controlla se sta saltando
 void Player::apply_gravity() {
     if (is_jumping)
@@ -159,6 +147,14 @@ void Player::set_is_damaged(bool _is_damaged) {
 
 bool Player::damaged_should_tick() {
     return damaged_ticks % PLAYER_DAMAGED_BLINK_TICKS == 0;
+}
+
+void Player::refresh(Position _position, List<int> _floor, List<int> _ceiling, List<Platform>& _platforms, List<Powerup*>& _powerups) {
+    position = _position;
+    floor = _floor;
+    ceiling = _ceiling;
+    platforms = _platforms;
+    powerups = _powerups;
 }
 
 EntityType Player::get_powerup_type() {

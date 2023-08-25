@@ -18,6 +18,8 @@ class StaticBox : public StaticEntity {
     bool is_on_top(Position position);
     bool is_inside(Position position);
     bool is_touching_ceiling(Position position);
+    bool is_x_within(int x);
+    int get_top_y(int x);
 };
 
 #endif  // _STATICBOX_HPP_

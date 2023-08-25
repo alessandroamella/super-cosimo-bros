@@ -16,13 +16,13 @@ void InputManager::read_input(WINDOW* win) {
 }
 
 void InputManager::wait_for_btn(WINDOW* win, int btn) {
-    nodelay(win, FALSE);
+    nodelay(win, false);
 
     while (true) {
         int ch = wgetch(win);
 
         if (ch == (int)btn) {
-            nodelay(win, TRUE);
+            nodelay(win, true);
             return;
         }
     }

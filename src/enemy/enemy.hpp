@@ -6,6 +6,7 @@
 #include "../gametimer/gametimer.hpp"
 #include "../inputmanager/inputmanager.hpp"
 #include "../list/list.hpp"
+#include "../platform/platform.hpp"
 #include "../rigidentity/rigidentity.hpp"
 #include "../shared/position.hpp"
 #include "../shared/settings.hpp"
@@ -18,8 +19,10 @@ class Enemy : public RigidEntity {
     bool should_change_direction();
     void change_direction();
 
+    Position get_after_pos();
+
    public:
-    Enemy(GameTimer& timer, Position position, List<int> floor, List<int> ceiling);
+    Enemy(GameTimer& timer, Position position, List<int> floor, List<int> ceiling, List<Platform>& platforms);
 
     int get_health();
     void remove_health();
@@ -38,6 +41,7 @@ class Enemy : public RigidEntity {
     bool has_wall_on_right();
     bool has_pit_on_left();
     bool has_pit_on_right();
+    bool collides_with_platform();
 };
 
 #endif  // _ENEMY_HPP_

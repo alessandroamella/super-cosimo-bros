@@ -4,16 +4,17 @@
 #include <iostream>
 
 #define WHITE_TEXT 1
-#define RED_TEXT 2
-#define YELLOW_TEXT 3
-#define BLUE_TEXT 4
-#define GREEN_TEXT 5
+#define BG_WHITE 2
+#define BG_BLUE 3
+#define BG_MAGENTA 4
+#define RED_TEXT 5
+#define YELLOW_TEXT 6
+#define BLUE_TEXT 7
+#define GREEN_TEXT 8
 
-GameRenderer::GameRenderer(Player& player,
-                           LevelManager& cur_level,
-                           GameTimer& timer)
+GameRenderer::GameRenderer(Player* player, LevelManager* level_manager, GameTimer* timer)
     : player(player),
-      cur_level(cur_level),
+      level_manager(level_manager),
       game_timer(timer) {}
 
 GameRenderer::~GameRenderer() {
@@ -25,6 +26,9 @@ void GameRenderer::initialize() {
     initscr();                                          // Inizializza la finestra ncurses
     start_color();                                      // Abilita il sistema di colori
     init_pair(WHITE_TEXT, COLOR_WHITE, COLOR_BLACK);    // Testo bianco su sfondo nero (id, foreground, background)
+    init_pair(BG_WHITE, COLOR_BLACK, COLOR_WHITE);      //
+    init_pair(BG_BLUE, COLOR_BLACK, COLOR_BLUE);        //
+    init_pair(BG_MAGENTA, COLOR_BLACK, COLOR_MAGENTA);  //
     init_pair(RED_TEXT, COLOR_RED, COLOR_BLACK);        //
     init_pair(YELLOW_TEXT, COLOR_YELLOW, COLOR_BLACK);  //
     init_pair(BLUE_TEXT, COLOR_BLUE, COLOR_BLACK);      //
@@ -75,15 +79,15 @@ void GameRenderer::render_border() {
 }
 
 void GameRenderer::render_player() {
-    Position player_pos = player.get_position();
-    Position last_player_pos = player.get_last_position();
+    Position player_pos = player->get_position();
+    Position last_player_pos = player->get_last_position();
 
     // cancello vecchio player
     render_str(last_player_pos, " ");
 
-    bool player_has_mushroom = player.get_has_powerup() && player.get_powerup_type() == EntityType::Mushroom;
+    bool player_has_mushroom = player->get_has_powerup() && player->get_powerup_type() == EntityType::Mushroom;
 
-    if (player.get_is_damaged() && player.damaged_should_tick()) {
+    if (player->get_is_damaged() && player->damaged_should_tick()) {
         wattron(win, COLOR_PAIR(RED_TEXT));
         render_str(player_pos, player_has_mushroom ? PLAYER_POWERUP_RENDER_CHARACTER : PLAYER_RENDER_CHARACTER);
         wattroff(win, COLOR_PAIR(RED_TEXT));
@@ -97,8 +101,8 @@ void GameRenderer::render_player() {
 }
 
 void GameRenderer::render_enemies() {
-    for (int i = 0; i < cur_level.get_cur_room()->get_enemies().length(); i++) {
-        Enemy enemy = cur_level.get_cur_room()->get_enemies().at(i);
+    for (int i = 0; i < level_manager->get_cur_room()->get_enemies().length(); i++) {
+        Enemy enemy = level_manager->get_cur_room()->get_enemies().at(i);
         if (enemy.get_is_dead())
             continue;
 
@@ -112,8 +116,8 @@ void GameRenderer::render_enemies() {
 }
 
 void GameRenderer::render_powerups() {
-    for (int i = 0; i < cur_level.get_cur_room()->get_powerups().length(); i++) {
-        Powerup* powerup = cur_level.get_cur_room()->get_powerups().at(i);
+    for (int i = 0; i < level_manager->get_cur_room()->get_powerups().length(); i++) {
+        Powerup* powerup = level_manager->get_cur_room()->get_powerups().at(i);
         if (powerup == nullptr)
             throw std::runtime_error("Null pointer exception at GameRenderer::render_powerups()");
 
@@ -144,9 +148,17 @@ void GameRenderer::rectangle(Position _pos1, Position _pos2) {
     mvwaddch(win, pos2.y, pos2.x, ACS_LRCORNER);
 }
 
+void GameRenderer::empty_rectangle(Position pos1, Position pos2) {
+    for (int y = 0; y < pos2.y - pos1.y; y++) {
+        for (int x = 0; x < pos2.x - pos1.x; x++) {
+            render_str((Position){.x = pos1.x + x, .y = pos1.y + y}, " ");
+        }
+    }
+}
+
 void GameRenderer::render_platforms() {
-    for (int i = 0; i < cur_level.get_cur_room()->get_platforms().length(); i++) {
-        Platform platform = cur_level.get_cur_room()->get_platforms().at(i);
+    for (int i = 0; i < level_manager->get_cur_room()->get_platforms().length(); i++) {
+        Platform platform = level_manager->get_cur_room()->get_platforms().at(i);
 
         Position pos1 = platform.get_position();
         Position pos2 = platform.get_ur();
@@ -156,8 +168,28 @@ void GameRenderer::render_platforms() {
     }
 }
 
+void GameRenderer::render_start_end_regions() {
+    // render start region
+
+    // TODO decommenta l'if per nascondere la start region al primo livello
+    // if (level_manager->get_visited_rooms_count() > 1) {
+    wattron(win, COLOR_PAIR(BG_BLUE));
+    empty_rectangle(
+        level_manager->get_cur_room()->get_start_region().get_position(),
+        level_manager->get_cur_room()->get_start_region().get_ur());
+    wattroff(win, COLOR_PAIR(BG_BLUE));
+    // }
+
+    // render end region
+    wattron(win, COLOR_PAIR(BG_MAGENTA));
+    empty_rectangle(
+        level_manager->get_cur_room()->get_end_region().get_position(),
+        level_manager->get_cur_room()->get_end_region().get_ur());
+    wattroff(win, COLOR_PAIR(BG_MAGENTA));
+}
+
 void GameRenderer::clear_screen() {
-    werase(win);
+    wclear(win);
 }
 
 WINDOW* GameRenderer::get_win() const {
@@ -181,33 +213,34 @@ void GameRenderer::render_str(Position _position, const char* str) const {
     mvwprintw(win, position.y, position.x, "%s", str);
 };
 
-void GameRenderer::render_str_num(Position position,
-                                  const char* str,
-                                  int number) const {
+void GameRenderer::render_str_num(Position position, const char* str, int number) const {
     render_str(position, str);
+    wattron(win, COLOR_PAIR(YELLOW_TEXT));
     wprintw(win, " %d  ", number);
+    wattroff(win, COLOR_PAIR(YELLOW_TEXT));
 }
 
 void GameRenderer::render_all() {
     // render_debug_status();
     render_top_bar();
+    render_start_end_regions();
     render_powerups();
     render_player();
     render_enemies();
-    render_border();
-    render_platforms();
     render_floor();
+    render_platforms();
+    render_border();
     refresh_screen();
 }
 
-void GameRenderer::render_2d_char_array(AsciiText text,
-                                        Alignment h_align,
-                                        Alignment v_align) {
+void GameRenderer::render_2d_char_array(List<const char*> text, Alignment h_align, Alignment v_align) {
     clear_screen();
 
-    int y = text.height - 1;
+    int height = text.length();
 
-    int text_length = (int)(strlen(text.text[0]));
+    int y = height - 1;
+
+    int text_length = (int)(strlen(text.at(0)));
 
     while (y >= 0) {
         int x = 0;
@@ -219,13 +252,13 @@ void GameRenderer::render_2d_char_array(AsciiText text,
 
         int y_pos = 0;
         if (v_align == Alignment::Center) {
-            y_pos = (GAME_HEIGHT - text.height) / 2;
+            y_pos = (GAME_HEIGHT - height) / 2;
         } else if (v_align == Alignment::Right) {
-            y_pos = GAME_HEIGHT - text.height;
+            y_pos = GAME_HEIGHT - height;
         }
 
-        render_str((Position){.x = x, .y = y_pos + text.height - y},
-                   text.text[y--]);
+        render_str((Position){.x = x, .y = y_pos + height - y}, text.at(y));
+        y--;
 
         // std::cout << correct_pos.x << " - " << correct_pos.y << std::endl;
     }
@@ -237,10 +270,10 @@ void GameRenderer::render_2d_char_array(AsciiText text,
 void GameRenderer::render_floor() {
     wattron(win, COLOR_PAIR(GREEN_TEXT));
 
-    Position prev_native_pos = translate_position((Position){.x = 0, .y = cur_level.get_cur_room()->get_floor_at(0)});
+    Position prev_native_pos = translate_position((Position){.x = 0, .y = level_manager->get_cur_room()->get_floor_at(0)});
 
-    for (int i = 0; i < cur_level.get_cur_room()->get_width(); i++) {
-        int cur_height = cur_level.get_cur_room()->get_floor_at(i);
+    for (int i = 0; i < level_manager->get_cur_room()->get_width(); i++) {
+        int cur_height = level_manager->get_cur_room()->get_floor_at(i);
         int native_height = translate_y(cur_height);
 
         if (native_height == prev_native_pos.y && i != GAME_WIDTH - 1)
@@ -281,7 +314,7 @@ void GameRenderer::render_top_bar() {
 
     wattron(win, COLOR_PAIR(RED_TEXT));
 
-    int health = player.get_health();
+    int health = player->get_health();
     int full_hearts = health / 10;
     int empty_hearts = (PLAYER_MAX_HEALTH - health) / 10;
 
@@ -298,57 +331,49 @@ void GameRenderer::render_top_bar() {
     // monete
     render_str((Position){.x = 30, .y = GAME_HEIGHT - 2}, "Coins");
     wattron(win, COLOR_PAIR(YELLOW_TEXT));
-    render_str_num((Position){.x = 31, .y = GAME_HEIGHT - 3}, "", player.get_coins());
+    render_str_num((Position){.x = 31, .y = GAME_HEIGHT - 3}, "", player->get_coins());
     wattroff(win, COLOR_PAIR(YELLOW_TEXT));
 
     // difficolta
     render_str((Position){.x = 50, .y = GAME_HEIGHT - 2}, "Difficulty");
     wattron(win, COLOR_PAIR(YELLOW_TEXT));
-    render_str_num((Position){.x = 53, .y = GAME_HEIGHT - 3}, "", cur_level.get_difficulty());
+    render_str_num((Position){.x = 53, .y = GAME_HEIGHT - 3}, "", level_manager->get_difficulty());
     wattroff(win, COLOR_PAIR(YELLOW_TEXT));
+
+    // TODO remove debug
+    // debug: print player coordinates
+    render_str_num((Position){.x = 70, .y = GAME_HEIGHT - 2}, "x", (int)player->get_position().x);
+    render_str_num((Position){.x = 70, .y = GAME_HEIGHT - 3}, "y", (int)player->get_position().y);
+
+    // print start end regions
+    render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 2}, "start_x from", (int)level_manager->get_cur_room()->get_start_region().get_position().x);
+    render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 3}, "start_y from", (int)level_manager->get_cur_room()->get_start_region().get_position().y);
+    render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 4}, "start_x to", (int)level_manager->get_cur_room()->get_start_region().get_ur().x);
+    render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 5}, "start_y to", (int)level_manager->get_cur_room()->get_start_region().get_ur().y);
+    render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 2}, "end_x from", (int)level_manager->get_cur_room()->get_end_region().get_position().x);
+    render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 3}, "end_y from", (int)level_manager->get_cur_room()->get_end_region().get_position().y);
+    render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 4}, "end_x to", (int)level_manager->get_cur_room()->get_end_region().get_ur().x);
+    render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 5}, "end_y to", (int)level_manager->get_cur_room()->get_end_region().get_ur().y);
 }
 
 void GameRenderer::render_debug_status() {
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 1}, "last_tick", (int)(game_timer.last_tick_time.time_since_epoch() / std::chrono::milliseconds(1)));
+    // render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 1}, "last_tick", (int)(game_timer->last_tick_time.time_since_epoch() / std::chrono::milliseconds(1)));
 
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 6}, "is_on_floor", (int)player.is_on_floor());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 7}, "is_touching_ceiling", (int)player.is_touching_ceiling());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 8}, "has_wall_on_left", (int)player.has_wall_on_left());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 9}, "has_wall_on_right", (int)player.has_wall_on_right());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 10}, "is_jumping", (int)player.is_jumping);
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 6}, "is_on_floor", (int)player->is_on_floor());
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 7}, "is_touching_ceiling", (int)player->is_touching_ceiling());
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 8}, "has_wall_on_left", (int)player->has_wall_on_left());
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 9}, "has_wall_on_right", (int)player->has_wall_on_right());
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 10}, "is_jumping", (int)player->is_jumping);
 
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 12}, "vel_x", (int)player.vel_x);
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 13}, "vel_y", (int)player.vel_y);
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 12}, "vel_x", (int)player->vel_x);
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 13}, "vel_y", (int)player->vel_y);
 
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 15}, "x", (int)player.get_position().x);
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 16}, "y", (int)player.get_position().y);
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 15}, "x", (int)player->get_position().x);
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 16}, "y", (int)player->get_position().y);
 
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 18}, "floor[x]", (int)cur_level.get_cur_room()->get_floor_at(player.get_position().x));
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 19}, "ceiling[x]", (int)cur_level.get_cur_room()->get_ceiling_at(player.get_position().x));
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 18}, "floor[x]", (int)level_manager->get_cur_room()->get_floor_at(player->get_position().x));
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 19}, "ceiling[x]", (int)level_manager->get_cur_room()->get_ceiling_at(player->get_position().x));
 
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 21}, "health", (int)player.get_health());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 22}, "on_platform", (int)player.is_on_platform());
-
-    // render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 24}, "enemies", (int)cur_level.get_cur_room()->get_enemies().length());
-    // for (int i = 0; i < cur_level.get_cur_room()->get_enemies().length(); i++) {
-    //     Enemy enemy = cur_level.get_cur_room()->get_enemies().at(i);
-    //     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 25 - i}, "x", (int)enemy.get_position().x);
-    //     render_str_num((Position){.x = 8, .y = GAME_HEIGHT - 25 - i}, "y", (int)enemy.get_position().y);
-    //     render_str_num((Position){.x = 12, .y = GAME_HEIGHT - 25 - i}, "on_floor", (int)enemy.is_on_floor());
-    //     render_str_num((Position){.x = 23, .y = GAME_HEIGHT - 25 - i}, "touch_ceiling", (int)enemy.is_touching_ceiling());
-    //     render_str_num((Position){.x = 39, .y = GAME_HEIGHT - 25 - i}, "wall_left", (int)enemy.has_wall_on_left());
-    //     render_str_num((Position){.x = 51, .y = GAME_HEIGHT - 25 - i}, "wall_right", (int)enemy.has_wall_on_right());
-    //     render_str_num((Position){.x = 64, .y = GAME_HEIGHT - 25 - i}, "vel_x", (int)enemy.vel_x);
-    //     render_str_num((Position){.x = 72, .y = GAME_HEIGHT - 25 - i}, "vel_y", (int)enemy.vel_y);
-    // }
-
-    // render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 27}, "platforms", (int)cur_level.get_cur_room()->get_platforms().length());
-    // for (int i = 0; i < cur_level.get_cur_room()->get_platforms().length(); i++) {
-    //     Platform platform = cur_level.get_cur_room()->get_platforms().at(i);
-    //     render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 28 - i}, "on_top", (int)platform.is_on_top(player.get_position()));
-    //     render_str_num((Position){.x = 11, .y = GAME_HEIGHT - 28 - i}, "ab", (int)platform.is_above(player.get_position()));
-    //     render_str_num((Position){.x = 16, .y = GAME_HEIGHT - 28 - i}, "bel", (int)platform.is_below(player.get_position()));
-    //     render_str_num((Position){.x = 22, .y = GAME_HEIGHT - 28 - i}, "in", (int)platform.is_inside(player.get_position()));
-    //     render_str_num((Position){.x = 27, .y = GAME_HEIGHT - 28 - i}, "touch_ceiling", (int)platform.is_touching_ceiling(player.get_position()));
-    // }
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 21}, "health", (int)player->get_health());
+    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 22}, "on_platform", (int)player->is_on_platform());
 }

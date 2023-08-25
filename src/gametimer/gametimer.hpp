@@ -10,14 +10,12 @@
 class GameTimer {
    private:
     float tick_interval;
+    std::chrono::time_point<std::chrono::high_resolution_clock> last_tick_time;
 
    public:
     GameTimer(float tick_interval);
     void start();
     bool should_tick();
-
-    // TODO sposta in private dopo debug
-    std::chrono::time_point<std::chrono::high_resolution_clock> last_tick_time;
 };
 
 #endif  // _GAME_TIMER_HPP_

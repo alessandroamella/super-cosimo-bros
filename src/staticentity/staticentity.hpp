@@ -14,6 +14,7 @@ class StaticEntity {
    public:
     StaticEntity(Position position);
     Position get_position();
+    void set_position(Position position);
     virtual EntityType get_entity_type();
 };
 
