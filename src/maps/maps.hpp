@@ -8,11 +8,12 @@
 
 class Maps {
    protected:
-   public:
-    static Room layout1();
-    static Room layout2();
-    static Room layout3();
+    List<Room*> rooms;
 
+   public:
+    Maps();
+    Room* get_room(int index);
+    void cleanup();
     // eccetera per tutte le altre stanze
 };
 

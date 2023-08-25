@@ -2,8 +2,9 @@
 
 #include "../shared/functions.hpp"
 
-Room::Room(List<Powerup*> powerups, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height, StaticBox start_region, StaticBox end_region)
-    : powerups(powerups),
+Room::Room(const int room_id, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height, StaticBox start_region, StaticBox end_region)
+    : room_id(room_id),
+      powerups(),
       floor(floor),
       ceiling(ceiling),
       width(width),
@@ -16,6 +17,19 @@ Room::Room(List<Powerup*> powerups, List<int> floor, List<int> ceiling, List<Pla
         throw std::invalid_argument("floor room length must be equal to width");
 }
 
+// non copiare nemici!!
+Room::Room(const Room& base)
+    : room_id(base.room_id), powerups(base.powerups), floor(base.floor), ceiling(base.ceiling), width(base.width), height(base.height), platforms(base.platforms), enemies(), start_region(base.start_region), end_region(base.end_region) {
+}
+
+Room* Room::clone() const {
+    return new Room(*this);
+}
+
+int Room::get_room_id() {
+    return room_id;
+}
+
 void Room::load() {
     for (int i = 0; i < enemies.length(); i++) {
         enemies.at(i).start_walking();
@@ -25,6 +39,12 @@ void Room::load() {
 void Room::freeze() {
     for (int i = 0; i < enemies.length(); i++) {
         enemies.at(i).stop_walking();
+    }
+}
+
+void Room::cleanup() {
+    for (int i = 0; i < powerups.length(); i++) {
+        delete powerups.at(i);
     }
 }
 
@@ -52,7 +72,8 @@ int Room::get_ceiling_at(int x) {
     return ceiling.at(x);
 }
 
-int Room::get_platform_at(int x) {
+// ATTENTO AL `nullptr` (CONTROLLA)
+Platform* Room::get_platform_at(int x) {
     if (x < 0 || x >= width)
         throw std::invalid_argument(
             "get_platform_at: x=" + std::to_string(x) +
@@ -60,10 +81,10 @@ int Room::get_platform_at(int x) {
 
     for (int i = 0; i < platforms.length(); i++) {
         if (platforms.at(i).is_x_within(x))
-            return platforms.at(i).get_top_y(x);
+            return &platforms.at(i);
     }
 
-    return -1;
+    return nullptr;
 }
 
 List<int>& Room::get_floor() {
@@ -108,6 +129,10 @@ Position Room::get_player_start_position() {
 
 void Room::add_enemy(Enemy enemy) {
     enemies.push(enemy);
+}
+
+void Room::add_powerup(Powerup* powerup) {
+    powerups.push(powerup);
 }
 
 bool Room::is_within_bounds(Position position) {

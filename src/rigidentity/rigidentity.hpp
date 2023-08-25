@@ -14,14 +14,14 @@ class RigidEntity : public StaticEntity {
    protected:
     EntityType type;
 
-    GameTimer& game_timer;
+    GameTimer* game_timer;
 
-    List<int> floor;
-    List<int> ceiling;
+    List<int>* floor;
+    List<int>* ceiling;
 
     Position starting_position;
 
-    List<Platform>& platforms;
+    List<Platform>* platforms;
 
     void apply_gravity();
     void move_based_on_vel();
@@ -33,7 +33,7 @@ class RigidEntity : public StaticEntity {
     void clamp_velocity();
 
    public:
-    RigidEntity(GameTimer& timer, Position position, List<int> floor, List<int> ceiling, List<Platform>& platforms);
+    RigidEntity(GameTimer* timer, Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms);
     Position get_last_position();
     void reset_position();
     Position get_velocity();
@@ -42,6 +42,7 @@ class RigidEntity : public StaticEntity {
     // TODO finito il debug, sposta in private
     bool is_on_floor();
     bool is_touching_ceiling();
+    Position get_after_pos();
     bool has_wall_on_left();
     bool has_wall_on_right();
     bool is_on_platform();

@@ -14,6 +14,8 @@ class Room {
     int width;
     int height;
 
+    const int room_id;
+
     List<int> floor;
     List<int> ceiling;
     List<Platform> platforms;
@@ -25,11 +27,15 @@ class Room {
     StaticBox end_region;
 
    public:
-    Room(List<Powerup*> powerups, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height, StaticBox start_region, StaticBox end_region);
+    Room(const int room_id, List<int> floor, List<int> ceiling, List<Platform> platforms, int width, int height, StaticBox start_region, StaticBox end_region);
+    Room(const Room& base);  // costruttore copia
+    Room* clone() const;
+
+    int get_room_id();
 
     int get_floor_at(int x);
     int get_ceiling_at(int x);
-    int get_platform_at(int x);
+    Platform* get_platform_at(int x);
 
     List<int>& get_floor();
     List<int>& get_ceiling();
@@ -40,6 +46,7 @@ class Room {
     int get_height();
 
     void add_enemy(Enemy enemy);
+    void add_powerup(Powerup* powerup);
 
     List<Powerup*>& get_powerups();
     List<Enemy>& get_enemies();
@@ -53,6 +60,8 @@ class Room {
 
     void load();
     void freeze();
+
+    void cleanup();
 
     void tick();
 };
