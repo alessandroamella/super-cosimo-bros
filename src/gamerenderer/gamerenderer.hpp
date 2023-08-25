@@ -37,9 +37,9 @@ class GameRenderer {
 
    public:
     GameRenderer(Player* player, LevelManager* level_manager, GameTimer* timer);
-    ~GameRenderer();
 
     void initialize();
+    void cleanup();
 
     void render_all();
 
