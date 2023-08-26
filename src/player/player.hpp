@@ -60,6 +60,8 @@ class Player : public RigidEntity {
 
     void apply_gravity();
 
+    std::chrono::steady_clock::time_point next_projectile_delay;
+
    public:
     Player(GameTimer* timer,
            InputManager* input_manager,
@@ -94,6 +96,9 @@ class Player : public RigidEntity {
 
     bool has_star();
     bool should_show_star();
+
+    bool should_shoot();
+    void reset_shoot();
 
     void refresh(Position position,
                  List<int>* floor,

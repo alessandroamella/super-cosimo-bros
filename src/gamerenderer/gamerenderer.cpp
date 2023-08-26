@@ -1,5 +1,7 @@
 #include "gamerenderer.hpp"
 
+#include "../coin/coin.hpp"
+
 #include <cstring>
 #include <iostream>
 
@@ -89,6 +91,7 @@ void GameRenderer::render_player() {
     render_str(last_player_pos, " ");
 
     bool player_has_mushroom = player->get_has_powerup() && player->get_powerup_type() == EntityType::Mushroom;
+    bool player_has_gun = player->get_has_powerup() && player->get_powerup_type() == EntityType::Gun;
     bool player_has_star = player->has_star() && player->should_show_star();
 
     if (player->get_is_damaged() && player->damaged_should_tick()) {
@@ -98,6 +101,10 @@ void GameRenderer::render_player() {
     } else if (player_has_mushroom) {
         wattron(win, COLOR_PAIR(TEXT_YELLOW));
         render_str(player_pos, PLAYER_POWERUP_RENDER_CHARACTER);
+        wattroff(win, COLOR_PAIR(TEXT_YELLOW));
+    } else if (player_has_gun) {
+        wattron(win, COLOR_PAIR(TEXT_YELLOW));
+        render_str(player_pos, PLAYER_GUN_RENDER_CHARACTER);
         wattroff(win, COLOR_PAIR(TEXT_YELLOW));
     } else if (player_has_star) {
         wattron(win, COLOR_PAIR(TEXT_YELLOW));
@@ -131,14 +138,39 @@ void GameRenderer::render_powerups() {
 
         Position powerup_pos = powerup->get_position();
 
-        rectangle(powerup_pos, powerup->get_ur());
+        if (powerup->get_entity_type() == EntityType::Coin) {
+            // cast to Coin
+            Coin* coin = (Coin*)powerup;
+            wattron(win, COLOR_PAIR(TEXT_YELLOW));
+            rectangle(powerup_pos, (Position){.x = powerup->get_ur().x + coin->get_digits() - 1, .y = powerup->get_ur().y});
+            wattroff(win, COLOR_PAIR(TEXT_YELLOW));
+        } else {
+            wattron(win, COLOR_PAIR(TEXT_BLUE));
+            rectangle(powerup_pos, powerup->get_ur());
+            wattroff(win, COLOR_PAIR(TEXT_BLUE));
+        }
 
         Position char_pos = (Position){.x = powerup_pos.x + 2, .y = powerup_pos.y - 1};
 
         bool is_active = powerup->get_is_active();
-        wattron(win, COLOR_PAIR(is_active ? TEXT_YELLOW : TEXT_RED));
+        wattron(win, COLOR_PAIR(is_active ? TEXT_YELLOW : TEXT_BLUE));
         render_str(char_pos, powerup->get_is_active() ? powerup->get_render_char() : POWERUP_RENDER_DISABLED_CHARACTER);
-        wattroff(win, COLOR_PAIR(is_active ? TEXT_YELLOW : TEXT_RED));
+        if (!powerup->get_is_active() && powerup->get_entity_type() == EntityType::Coin && ((Coin*)powerup)->get_digits() > 1)
+            render_str((Position){.x = char_pos.x + 1, .y = char_pos.y}, POWERUP_RENDER_DISABLED_CHARACTER);
+        wattroff(win, COLOR_PAIR(is_active ? TEXT_YELLOW : TEXT_BLUE));
+    }
+}
+
+void GameRenderer::render_projectiles() {
+    for (int i = 0; i < level_manager->get_cur_room()->get_projectiles().length(); i++) {
+        Projectile* projectile = level_manager->get_cur_room()->get_projectiles().at(i);
+
+        Position projectile_pos = projectile->get_position();
+        Position last_projectile_pos = projectile->get_last_position();
+
+        // cancello vecchio projectile
+        render_str(last_projectile_pos, " ");
+        render_str(projectile_pos, PROJECTILE_RENDER_CHARACTER);
     }
 }
 
@@ -236,6 +268,7 @@ void GameRenderer::render_all() {
     render_top_bar();
     render_powerups();
     render_start_end_regions();
+    render_projectiles();
     render_player();
     render_enemies();
     render_floor();
@@ -342,7 +375,15 @@ void GameRenderer::render_top_bar() {
     // monete
     render_str((Position){.x = 30, .y = GAME_HEIGHT - 2}, "Coins");
     wattron(win, COLOR_PAIR(TEXT_YELLOW));
-    render_str_num((Position){.x = 31, .y = GAME_HEIGHT - 3}, "", player->get_coins());
+    // stampa leading zeros = 3 - numero di cifre
+    int coins_digits = std::to_string(player->get_coins()).length();
+    render_str_num((Position){.x = 30 + COINS_RENDER_DIGITS - coins_digits, .y = GAME_HEIGHT - 3}, "", player->get_coins());
+    for (int i = 0; i < COINS_RENDER_DIGITS - coins_digits; i++) {
+        // manuale senno' stampa il padding che nasconde le cifre
+        wattron(win, COLOR_PAIR(TEXT_YELLOW));
+        mvwprintw(win, translate_y(GAME_HEIGHT - 3), 30 + i + 1, "%s", "0");
+        wattroff(win, COLOR_PAIR(TEXT_YELLOW));
+    }
     wattroff(win, COLOR_PAIR(TEXT_YELLOW));
 
     // difficolta

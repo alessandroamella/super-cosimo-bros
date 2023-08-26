@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "../coin/coin.hpp"
 #include "../shared/functions.hpp"
 #include "../shared/settings.hpp"
 
@@ -60,12 +61,15 @@ void LevelManager::place_enemies_randomly(int enemy_count, int start_padding) {
 }
 
 void LevelManager::place_powerups_randomly(int powerup_count, int start_padding) {
-    List<int> x_positions = pick_random_points(powerup_count, 1 + start_padding, get_cur_room()->get_width() - 1);
+    List<int> x_positions = pick_random_points(powerup_count + MIN_NUMBER_OF_COINS, 1 + start_padding, get_cur_room()->get_width() - 1);
 
-    for (int i = 0; i < powerup_count; i++) {
+    int platform_y;
+    bool force_spawn_on_floor = false;
+    for (int i = 0; i < powerup_count + MIN_NUMBER_OF_COINS; i++) {
         int x = x_positions.at(i);
         Platform* platform_at_x = get_cur_room()->get_platform_at(x);
-        int platform_y = platform_at_x != nullptr ? platform_at_x->get_top_y(x) : -1;
+        platform_y = platform_at_x != nullptr && !force_spawn_on_floor ? platform_at_x->get_top_y(x) : -1;
+
         int y = platform_y != -1 ? platform_y + 1 : get_cur_room()->get_floor_at(x) + 1;
 
         y += 5;
@@ -86,28 +90,43 @@ void LevelManager::place_powerups_randomly(int powerup_count, int start_padding)
                         for (int l = 0; l < 4; j++) {
                             if (_platform.is_inside((Position){.x = x + k - 2, .y = y + l - 2}))
                                 place_found = false;
-                            else if (get_cur_room()->get_end_region().is_inside((Position){.x = x + k - 2, .y = y + l - 2}))
-                                place_found = false;
-                            else if (get_cur_room()->get_start_region().is_inside((Position){.x = x + k - 2, .y = y + l - 2}))
-                                place_found = false;
                         }
                     }
                 }
             }
+
+            // e che non sia dentro le regioni di inizio o fine
+            if (place_found)
+                for (int j = 0; j < 4; j++) {
+                    for (int k = 0; k < 4; k++) {
+                        if (get_cur_room()->get_end_region().is_inside((Position){.x = x + j - 2, .y = y + k - 2}))
+                            place_found = false;
+                        else if (get_cur_room()->get_start_region().is_inside((Position){.x = x + j - 2, .y = y + k - 2}))
+                            place_found = false;
+                    }
+                }
         } while (!place_found && y <= get_cur_room()->get_height() - 5);
         if (!place_found) {
-            continue;
+            // se ha provato a spawnare sulla piattaforma, ritenta sul pavimento
+            if (platform_y != -1) {
+                force_spawn_on_floor = true;
+                i--;
+                continue;
+            }
         }
+
+        force_spawn_on_floor = false;
 
         Position powerup_pos = (Position){x, y};
 
-        Powerup* powerup = instance_random_powerup(powerup_pos);
+        Powerup* powerup = i < powerup_count ? instance_random_powerup(powerup_pos) : new Coin(powerup_pos, Coin::generate_random_coin_value());
         get_cur_room()->add_powerup(powerup);
     }
 }
 
 int LevelManager::get_powerup_number(int x) {
-    return (int)(-std::pow(x, 0.75) + 8.0);
+    // segue la funzione y = max(-sqrt(x) + 4, 1)
+    return std::max((int)(-std::sqrt(x) + 4.0), 1);
 }
 
 int LevelManager::get_visited_rooms_count() {

@@ -7,6 +7,27 @@
 #include "../roomstate/roomstate.hpp"
 
 class LevelManager {
+   private:
+    GameTimer* game_timer;
+    List<Room*>* rooms;
+
+    List<RoomState> visited_rooms;
+    int cur_visited_room_index;
+
+    bool should_load_new_room;
+    bool should_load_prev_room;
+
+    bool is_first_room();
+    Room* get_random_room();
+
+    bool is_in_start_region(Position position);
+    bool is_in_end_region(Position position);
+    void handle_enter_region(Position position);
+
+    void place_enemies_randomly(int enemy_count, int start_padding);
+    void place_powerups_randomly(int powerup_count, int start_padding);
+    int get_powerup_number(int difficulty);
+
    public:
     LevelManager(List<Room*>* rooms, GameTimer* game_timer);
 
@@ -23,25 +44,6 @@ class LevelManager {
     void cleanup();
 
     void tick(Position player_position);
-
-   private:
-    GameTimer* game_timer;
-    List<Room*>* rooms;
-
-    List<RoomState> visited_rooms;
-    int cur_visited_room_index;
-
-    bool should_load_new_room;
-    bool should_load_prev_room;
-
-    bool is_first_room();
-    Room* get_random_room();
-    bool is_in_start_region(Position position);
-    bool is_in_end_region(Position position);
-    void handle_enter_region(Position position);
-    void place_enemies_randomly(int enemy_count, int start_padding);
-    void place_powerups_randomly(int powerup_count, int start_padding);
-    int get_powerup_number(int difficulty);
 };
 
 #endif  // _LEVELMANAGER_HPP_

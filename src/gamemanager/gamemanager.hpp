@@ -33,7 +33,10 @@ class GameManager {
     AsciiTexts ascii_texts;
 
     void splash_screen();
-    void handle_enemy_collisions();
+    void handle_collisions();
+    void handle_player_shooting();
+    void handle_enemies_shooting();
+    void refresh_player();
     void game_over_screen();
     void main_loop();
 

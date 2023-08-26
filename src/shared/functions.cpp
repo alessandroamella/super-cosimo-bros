@@ -38,13 +38,10 @@ List<int> pick_random_points(int n, int lower, int upper) {
 
 Powerup* instance_random_powerup(Position position) {
     int random = std::rand() % 5;
-    int random_value;
 
     switch (random) {
         case 0:
-            random_value = rand() % 100;
-            random_value = std::min(random_value - random_value % 5, 5);  // multiplo di 5, min. 5
-            return new Coin(position, random_value);
+            return new Coin(position, Coin::generate_random_coin_value());
         case 1:
             return new Gun(position);
         case 2:

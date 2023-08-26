@@ -23,7 +23,8 @@ Player::Player(GameTimer* timer,
       coins(0),
       powerups(powerups),
       is_damaged(false),
-      damaged_ticks(0) {}
+      damaged_ticks(0),
+      next_projectile_delay(std::chrono::steady_clock::now() + std::chrono::milliseconds(PROJECTILE_DELAY_MS)) {}
 
 void Player::run_left() {
     vel_x = -PLAYER_RUN_VEL;
@@ -75,14 +76,12 @@ void Player::process_input() {
     else if (!is_jumping)
         apply_friction();
 
-    if (input_manager->is_key_pressed((int)PlayerControls::Shoot))
+    if (input_manager->is_key_pressed((int)PlayerControls::Shoot) && has_powerup && powerup_type == EntityType::Gun)
         shoot();
 }
 
 void Player::shoot() {
     is_shooting = true;
-
-    // TODO
 }
 
 // override: controlla se sta saltando
@@ -157,6 +156,15 @@ bool Player::should_show_star() {
     return star_ticks % 2 == 0;
 }
 
+bool Player::should_shoot() {
+    return is_shooting && std::chrono::steady_clock::now() > next_projectile_delay;
+}
+
+void Player::reset_shoot() {
+    is_shooting = false;
+    next_projectile_delay = std::chrono::steady_clock::now() + std::chrono::milliseconds(PROJECTILE_DELAY_MS);
+}
+
 void Player::tick_star() {
     if (!has_star())
         return;
@@ -188,7 +196,7 @@ int Player::get_coins() {
 }
 
 void Player::add_coins(int amount) {
-    coins += amount;
+    coins = std::min(coins + amount, PLAYER_MAX_COINS);
 }
 
 void Player::remove_coins(int amount) {
@@ -239,6 +247,7 @@ void Player::handle_powerup_collisions() {
         if (powerup->get_is_active() && (powerup->is_inside(after_pos) || (powerup->is_below(position) && (powerup->is_above(after_pos) || powerup->is_inside(after_pos))) || (powerup->is_above(position) && (powerup->is_below(after_pos) || powerup->is_inside(after_pos))))) {
             switch (powerup->get_entity_type()) {
                 case EntityType::Mushroom:
+                case EntityType::Gun:
                     has_powerup = has_powerup || powerup->get_is_active();
                     powerup_type = powerup->get_entity_type();
                     break;

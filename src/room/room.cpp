@@ -40,17 +40,26 @@ void Room::freeze() {
     for (int i = 0; i < enemies.length(); i++) {
         enemies.at(i).stop_walking();
     }
+    for (int i = 0; i < projectiles.length(); i++) {
+        remove_projectile(projectiles.at(i));
+    }
 }
 
 void Room::cleanup() {
     for (int i = 0; i < powerups.length(); i++) {
         delete powerups.at(i);
     }
+    for (int i = 0; i < projectiles.length(); i++) {
+        delete projectiles.at(i);
+    }
 }
 
 void Room::tick() {
     for (int i = 0; i < enemies.length(); i++) {
         enemies.at(i).tick();
+    }
+    for (int i = 0; i < projectiles.length(); i++) {
+        projectiles.at(i)->tick();
     }
 }
 
@@ -115,6 +124,10 @@ List<Enemy>& Room::get_enemies() {
     return enemies;
 }
 
+List<Projectile*>& Room::get_projectiles() {
+    return projectiles;
+}
+
 StaticBox& Room::get_start_region() {
     return start_region;
 }
@@ -135,6 +148,16 @@ void Room::add_powerup(Powerup* powerup) {
     powerups.push(powerup);
 }
 
-bool Room::is_within_bounds(Position position) {
-    return position.x > 0 && position.x < floor.at(position.x) && position.y > 0 && position.y < ceiling.at(position.x);
+void Room::add_projectile(Projectile* projectile) {
+    projectiles.push(projectile);
+}
+
+void Room::remove_projectile(Projectile* projectile) {
+    // confronto tra puntatori, tanto se controllo usando .at ottengo lo stesso puntatore dunque funziona
+    for (int i = 0; i < projectiles.length(); i++) {
+        if (projectiles.at(i) == projectile) {
+            delete projectiles.pop(i);
+            return;
+        }
+    }
 }

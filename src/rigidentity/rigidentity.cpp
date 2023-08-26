@@ -18,7 +18,8 @@ RigidEntity::RigidEntity(GameTimer* timer,
       floor(floor),
       ceiling(ceiling),
       type(EntityType::RigidEntity),
-      platforms(platforms) {}
+      platforms(platforms),
+      last_direction(Direction::Right) {}
 
 void RigidEntity::move_left() {
     vel_x = -PLAYER_WALK_VEL;
@@ -102,9 +103,41 @@ void RigidEntity::move_based_on_vel() {
     position.y += vel_y /* * delta_time */;
 }
 
+bool RigidEntity::collides_with_platform() {
+    for (int i = 0; i < platforms->length(); i++) {
+        Platform& platform = platforms->at(i);
+        Position after_pos = get_after_pos();
+
+        if (platform.is_inside(after_pos))
+            return true;
+        else if (platform.is_x_within(position.x) && platform.get_top_y(position.x) == position.y - 1 && (!platform.is_x_within(after_pos.x) || platform.get_top_y(after_pos.x) != after_pos.y - 1)) {
+            // check for adjacent platform
+            bool adjacent_platform = false;
+
+            for (int j = 0; j < platforms->length(); j++) {
+                Platform& _platform = platforms->at(j);
+
+                if (_platform.is_x_within(after_pos.x) && _platform.get_top_y(after_pos.x) == position.y - 1)
+                    adjacent_platform = true;
+            }
+
+            if (!adjacent_platform)
+                return true;
+        }
+    }
+
+    return false;
+}
+
 void RigidEntity::clamp_velocity() {
     vel_x = clamp(vel_x, -MAX_ABS_X_VEL, MAX_ABS_X_VEL);
     vel_y = clamp(vel_y, MAX_FALL_VEL, MAX_JUMP_VEL);
+
+    // non toccare se vel_x == 0
+    if (vel_x > 0)
+        last_direction = Direction::Right;
+    else if (vel_x < 0)
+        last_direction = Direction::Left;
 
     while (vel_x >= 0 && (position.x + vel_x >= GAME_WIDTH - 1 || floor->at(position.x + vel_x) > position.y))
         vel_x--;
@@ -134,6 +167,14 @@ void RigidEntity::tick() {
     clamp_position();
 
     last_position = cur_pos;
+}
+
+Direction RigidEntity::get_direction() {
+    return last_direction;
+}
+
+bool RigidEntity::is_out_of_bounds() {
+    return !is_in(position.x, 1, GAME_WIDTH - 1) || !is_in(position.y, 1, GAME_HEIGHT - 1);
 }
 
 Position RigidEntity::get_last_position() {
