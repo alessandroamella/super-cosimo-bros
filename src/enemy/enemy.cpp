@@ -3,7 +3,8 @@
 Enemy::Enemy(GameTimer* timer, Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms)
     : RigidEntity(timer, position, floor, ceiling, platforms),
       health(ENEMY_STARTING_HEALTH),
-      is_dead(false) {}
+      is_dead(false),
+      next_projectile_delay(std::chrono::steady_clock::now() + std::chrono::milliseconds(PROJECTILE_DELAY_MS)) {}
 
 int Enemy::get_health() {
     return health;
@@ -14,7 +15,7 @@ void Enemy::remove_health() {
 }
 
 void Enemy::start_walking() {
-    vel_x = ENEMY_WALK_VEL;
+    vel_x = ENEMY_VEL;
 
     if (should_change_direction()) {
         change_direction();
@@ -61,32 +62,6 @@ void Enemy::change_direction() {
     vel_x = -vel_x;
 }
 
-bool Enemy::collides_with_platform() {
-    for (int i = 0; i < platforms->length(); i++) {
-        Platform& platform = platforms->at(i);
-        Position after_pos = get_after_pos();
-
-        if (platform.is_inside(after_pos))
-            return true;
-        else if (platform.is_x_within(position.x) && platform.get_top_y(position.x) == position.y - 1 && (!platform.is_x_within(after_pos.x) || platform.get_top_y(after_pos.x) != after_pos.y - 1)) {
-            // check for adjacent platform
-            bool adjacent_platform = false;
-
-            for (int j = 0; j < platforms->length(); j++) {
-                Platform& _platform = platforms->at(j);
-
-                if (_platform.is_x_within(after_pos.x) && _platform.get_top_y(after_pos.x) == position.y - 1)
-                    adjacent_platform = true;
-            }
-
-            if (!adjacent_platform)
-                return true;
-        }
-    }
-
-    return false;
-}
-
 bool Enemy::has_wall_on_left() {
     Position after_pos = get_after_pos();
     return after_pos.x <= 2 || floor->at(after_pos.x - 2) > after_pos.y;
@@ -95,6 +70,15 @@ bool Enemy::has_wall_on_left() {
 bool Enemy::has_wall_on_right() {
     Position after_pos = get_after_pos();
     return after_pos.x >= GAME_WIDTH - 2 || floor->at(after_pos.x + 1) > after_pos.y;
+}
+
+bool Enemy::should_shoot() {
+    return !is_dead && std::chrono::steady_clock::now() > next_projectile_delay;
+}
+
+void Enemy::reset_shoot() {
+    int random_delay_sec = (rand() % ENEMY_SHOOTING_MAX_DELAY_SEC) + 1;
+    next_projectile_delay = std::chrono::steady_clock::now() + std::chrono::seconds(random_delay_sec);
 }
 
 void Enemy::tick() {

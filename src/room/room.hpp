@@ -6,6 +6,7 @@
 #include "../list/list.hpp"
 #include "../platform/platform.hpp"
 #include "../powerup/powerup.hpp"
+#include "../projectile/projectile.hpp"
 #include "../shared/position.hpp"
 #include "../shared/settings.hpp"
 
@@ -22,6 +23,7 @@ class Room {
 
     List<Powerup*> powerups;
     List<Enemy> enemies;
+    List<Projectile*> projectiles;
 
     StaticBox start_region;
     StaticBox end_region;
@@ -45,18 +47,20 @@ class Room {
     int get_width();
     int get_height();
 
-    void add_enemy(Enemy enemy);
-    void add_powerup(Powerup* powerup);
-
     List<Powerup*>& get_powerups();
     List<Enemy>& get_enemies();
+    List<Projectile*>& get_projectiles();
+
+    void add_enemy(Enemy enemy);
+    void add_powerup(Powerup* powerup);
+    void add_projectile(Projectile* projectile);
+
+    void remove_projectile(Projectile* projectile);
 
     StaticBox& get_start_region();
     StaticBox& get_end_region();
 
     Position get_player_start_position();
-
-    bool is_within_bounds(Position position);
 
     void load();
     void freeze();

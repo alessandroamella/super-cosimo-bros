@@ -23,8 +23,12 @@ class RigidEntity : public StaticEntity {
 
     List<Platform>* platforms;
 
+    Direction last_direction;
+
     void apply_gravity();
     void move_based_on_vel();
+
+    bool collides_with_platform();
 
     void move_left();
     void move_right();
@@ -38,6 +42,10 @@ class RigidEntity : public StaticEntity {
     void reset_position();
     Position get_velocity();
     void tick();
+
+    Direction get_direction();
+
+    bool is_out_of_bounds();
 
     // TODO finito il debug, sposta in private
     bool is_on_floor();

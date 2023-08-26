@@ -22,7 +22,8 @@ class Enemy : public RigidEntity {
     bool has_wall_on_left();
     bool has_wall_on_right();
     bool has_pit();
-    bool collides_with_platform();
+
+    std::chrono::steady_clock::time_point next_projectile_delay;
 
    public:
     Enemy(GameTimer* timer, Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms);
@@ -32,6 +33,9 @@ class Enemy : public RigidEntity {
 
     void start_walking();
     void stop_walking();
+
+    bool should_shoot();
+    void reset_shoot();
 
     bool get_is_dead();
     void set_is_dead(bool is_dead);

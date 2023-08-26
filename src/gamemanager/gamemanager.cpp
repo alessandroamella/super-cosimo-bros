@@ -30,7 +30,8 @@ void GameManager::splash_screen() {
     game_renderer->clear_screen();
 }
 
-void GameManager::handle_enemy_collisions() {
+void GameManager::handle_collisions() {
+    // enemies - player
     for (int i = 0; i < level->get_cur_room()->get_enemies().length(); i++) {
         Enemy& enemy = level->get_cur_room()->get_enemies().at(i);
 
@@ -38,6 +39,7 @@ void GameManager::handle_enemy_collisions() {
             if (player->get_has_powerup()) {
                 switch (player->get_powerup_type()) {
                     case EntityType::Mushroom:
+                    case EntityType::Gun:
                         player->set_is_damaged(true);
                         player->set_has_powerup(false);
                         break;
@@ -53,6 +55,84 @@ void GameManager::handle_enemy_collisions() {
             }
         }
     }
+
+    // projectiles - player, enemies
+    for (int i = 0; i < level->get_cur_room()->get_projectiles().length(); i++) {
+        Projectile* projectile = level->get_cur_room()->get_projectiles().at(i);
+
+        if (projectile->is_out_of_bounds()) {
+            game_renderer->clear_point(projectile->get_position());
+            level->get_cur_room()->remove_projectile(projectile);
+            continue;
+        }
+
+        // with player
+        if (projectile->get_shot_by() != EntityType::Player && collides(projectile, player)) {
+            if (player->get_has_powerup()) {
+                switch (player->get_powerup_type()) {
+                    case EntityType::Mushroom:
+                    case EntityType::Gun:
+                        player->set_is_damaged(true);
+                        player->set_has_powerup(false);
+                        break;
+                    case EntityType::Star:
+                        game_renderer->clear_point(projectile->get_position());
+                        level->get_cur_room()->remove_projectile(projectile);
+                        break;
+                }
+            } else {
+                player->set_is_damaged(true);
+                player->remove_health(PROJECTILE_DAMAGE);
+                player->jump();
+            }
+        }
+
+        // with enemies
+        bool should_continue = true;
+        for (int j = 0; should_continue && j < level->get_cur_room()->get_enemies().length(); j++) {
+            Enemy& enemy = level->get_cur_room()->get_enemies().at(j);
+
+            if (projectile->get_shot_by() != EntityType::Enemy && collides(projectile, &enemy) && !enemy.get_is_dead()) {
+                enemy.set_is_dead(true);
+                game_renderer->clear_point(enemy.get_position());
+                game_renderer->clear_point(projectile->get_position());
+                game_renderer->clear_point(projectile->get_position());
+                level->get_cur_room()->remove_projectile(projectile);
+                should_continue = false;
+            }
+        }
+    }
+}
+
+void GameManager::handle_player_shooting() {
+    if (player->should_shoot()) {
+        Room* cur_room = level->get_cur_room();
+        Position projectile_position = (Position){.x = player->get_position().x + (player->get_direction() == Direction::Left ? -1 : 1), .y = player->get_position().y};
+        Projectile* projectile = new Projectile(&game_timer, projectile_position, &cur_room->get_floor(), &cur_room->get_ceiling(), &cur_room->get_platforms(), EntityType::Player);
+        level->get_cur_room()->add_projectile(projectile);
+        projectile->start(player->get_direction());
+        player->reset_shoot();
+    }
+}
+
+void GameManager::handle_enemies_shooting() {
+    Room* cur_room = level->get_cur_room();
+
+    for (int i = 0; i < cur_room->get_enemies().length(); i++) {
+        Enemy& enemy = cur_room->get_enemies().at(i);
+
+        if (!enemy.get_is_dead() && enemy.should_shoot() && level->get_cur_difficulty() >= ENEMY_SHOOTING_MIN_DIFFICULTY) {
+            Projectile* projectile = new Projectile(&game_timer, enemy.get_position(), &cur_room->get_floor(), &cur_room->get_ceiling(), &cur_room->get_platforms(), EntityType::Enemy);
+            cur_room->add_projectile(projectile);
+            projectile->start(enemy.get_direction());
+            enemy.reset_shoot();
+        }
+    }
+}
+
+void GameManager::refresh_player() {
+    Room* cur_room = level->get_cur_room();
+    player->refresh(cur_room->get_player_start_position(), &cur_room->get_floor(), &cur_room->get_ceiling(), &cur_room->get_platforms(), &cur_room->get_powerups());
 }
 
 void GameManager::game_over_screen() {
@@ -71,7 +151,9 @@ void GameManager::main_loop() {
                 level->tick(player->get_position());
                 game_renderer->render_all();
 
-                handle_enemy_collisions();
+                handle_player_shooting();
+                handle_collisions();
+                handle_enemies_shooting();
 
                 if (player->get_health() <= 0) {
                     // game over and wait for ' ' to restart
@@ -87,10 +169,7 @@ void GameManager::main_loop() {
 
                 if (level->should_change_room()) {
                     level->execute_room_change();
-
-                    Room* cur_room = level->get_cur_room();
-                    player->refresh(cur_room->get_player_start_position(), &cur_room->get_floor(), &cur_room->get_ceiling(), &cur_room->get_platforms(), &cur_room->get_powerups());
-
+                    refresh_player();
                     game_renderer->clear_screen();
                 }
 
@@ -110,6 +189,8 @@ void GameManager::begin() {
 
     splash_screen();  // wait for ' ' to start
     level->load_first_room();
+    // add powerups
+    refresh_player();
 
     main_loop();
 }
