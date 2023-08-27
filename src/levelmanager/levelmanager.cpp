@@ -1,7 +1,7 @@
 #include "levelmanager.hpp"
 
-#include <math.h>
 #include <stdlib.h>
+#include <cmath>
 
 #include "../coin/coin.hpp"
 #include "../shared/functions.hpp"
