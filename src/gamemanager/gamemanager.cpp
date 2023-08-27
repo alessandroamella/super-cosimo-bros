@@ -45,6 +45,8 @@ void GameManager::handle_collisions() {
                         enemy.set_is_dead(true);
                         game_renderer->clear_point(enemy.get_position());
                         break;
+                    default:
+                        break;
                 }
             } else {
                 player->set_is_damaged(true);
@@ -76,6 +78,8 @@ void GameManager::handle_collisions() {
                     case EntityType::Star:
                         game_renderer->clear_point(projectile->get_position());
                         level->get_cur_room()->remove_projectile(projectile);
+                        break;
+                    default:
                         break;
                 }
             } else {

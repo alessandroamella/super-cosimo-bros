@@ -290,6 +290,8 @@ void Player::handle_powerup_collisions() {
                         add_coins(coin_value);
                     }
                     break;
+                default:
+                    break;
             }
 
             powerup->set_is_active(false);

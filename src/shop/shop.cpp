@@ -33,6 +33,8 @@ void Shop::handle_key_press(int key_pressed) {
         case (int)ShopControls::Buy:
             buy_powerup(cur_index);
             break;
+        default:
+            break;
     }
 
     cur_index = clamp(cur_index, 0, buyable_powerups.length() - 1);
