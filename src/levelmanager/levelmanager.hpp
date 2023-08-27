@@ -41,6 +41,9 @@ class LevelManager {
     void load_first_room();
     void restart_from_first_room();
 
+    int get_cur_visited_room_index() const;
+    int get_total_visited_room_count();
+
     void cleanup();
 
     void tick(Position player_position);

@@ -12,11 +12,9 @@ GameManager::GameManager()
     rooms.push(game_maps.get_room(2));
 
     powerups = List<Powerup*>();
-
     level = new LevelManager(&rooms, &game_timer);
-
     player = new Player(&game_timer, &input_manager, level->get_cur_room()->get_player_start_position(), &level->get_cur_room()->get_floor(), &level->get_cur_room()->get_ceiling(), &level->get_cur_room()->get_platforms(), &powerups);
-
+    shop = new Shop(player, &input_manager);
     game_renderer = new GameRenderer(player, level, &game_timer);
 
     game_timer.start();
@@ -41,7 +39,7 @@ void GameManager::handle_collisions() {
                     case EntityType::Mushroom:
                     case EntityType::Gun:
                         player->set_is_damaged(true);
-                        player->set_has_powerup(false);
+                        player->remove_powerup();
                         break;
                     case EntityType::Star:
                         enemy.set_is_dead(true);
@@ -73,7 +71,7 @@ void GameManager::handle_collisions() {
                     case EntityType::Mushroom:
                     case EntityType::Gun:
                         player->set_is_damaged(true);
-                        player->set_has_powerup(false);
+                        player->remove_powerup();
                         break;
                     case EntityType::Star:
                         game_renderer->clear_point(projectile->get_position());
@@ -139,7 +137,31 @@ void GameManager::game_over_screen() {
     game_renderer->render_2d_char_array(ascii_texts.get_game_over(), Alignment::Center, Alignment::Center);
 }
 
+void GameManager::shop_loop() {
+    input_manager.clear_input_buff();
+
+    bool should_continue = true;
+
+    List<int>* shop_controls = shop->get_shop_controls();
+
+    while (should_continue) {
+        game_renderer->render_shop(ascii_texts.get_shop(), shop->get_buyable_powerups_ptr(), shop->get_cur_index_ptr(), player->get_coins(), player->get_powerup_type(), level->get_total_visited_room_count(), shop->get_should_show_no_coins_message(), shop->get_should_show_powerup_bought_message());
+        int key = input_manager.wait_for_btns(game_renderer->get_win(), *shop_controls);
+        shop->handle_key_press(key);
+
+        should_continue = key != (int)ShopControls::Quit;
+        input_manager.clear_input_buff();
+    }
+
+    if (shop->get_should_apply_star())
+        player->add_star();
+    shop->reset_shop_status();
+    game_renderer->clear_screen();
+}
+
 void GameManager::main_loop() {
+    shop_loop();
+
     bool should_continue = true;
 
     try {
@@ -149,7 +171,7 @@ void GameManager::main_loop() {
             if (game_timer.should_tick()) {
                 player->tick();
                 level->tick(player->get_position());
-                game_renderer->render_all();
+                game_renderer->render_game();
 
                 handle_player_shooting();
                 handle_collisions();
@@ -163,14 +185,18 @@ void GameManager::main_loop() {
 
                     // restart game (reset player health and position, current room back to first room)
                     level->restart_from_first_room();
+                    refresh_player();
                     player->set_health(PLAYER_STARTING_HEALTH);
                     player->set_position(level->get_cur_room()->get_player_start_position());
-                }
 
-                if (level->should_change_room()) {
+                    shop_loop();
+                } else if (level->should_change_room()) {
                     level->execute_room_change();
                     refresh_player();
                     game_renderer->clear_screen();
+
+                    if (level->get_cur_visited_room_index() % 3 == 0)
+                        shop_loop();
                 }
 
                 should_continue = !input_manager.is_key_pressed(QUIT_KEY);
@@ -189,7 +215,6 @@ void GameManager::begin() {
 
     splash_screen();  // wait for ' ' to start
     level->load_first_room();
-    // add powerups
     refresh_player();
 
     main_loop();
@@ -202,6 +227,7 @@ void GameManager::cleanup() {
     delete level;
     delete player;
     delete game_renderer;
+    delete shop;
 
     for (int i = 0; i < rooms.length(); i++) {
         delete rooms.at(i);

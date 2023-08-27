@@ -4,15 +4,16 @@
 #include "../list/list.hpp"
 
 enum class Alignment {
-    Left,
+    Beginning,
     Center,
-    Right
+    End
 };
 
 class AsciiTexts {
    private:
     List<const char*> splash;
     List<const char*> game_over;
+    List<const char*> shop;
 
     List<const char*> read_from_file(const char* file_name);
 
@@ -20,6 +21,7 @@ class AsciiTexts {
     AsciiTexts();
     List<const char*>& get_splash();
     List<const char*>& get_game_over();
+    List<const char*>& get_shop();
 };
 
 #endif  // _ASCII_TEXTS_HPP_

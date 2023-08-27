@@ -7,13 +7,14 @@
 AsciiTexts::AsciiTexts() {
     splash = read_from_file("splash.txt");
     game_over = read_from_file("game_over.txt");
+    shop = read_from_file("shop.txt");
 }
 
 List<const char*> AsciiTexts::read_from_file(const char* file_name) {
     std::ifstream infile(file_name);
 
     if (!infile.is_open()) {
-        throw std::runtime_error("Could not open file");
+        throw std::runtime_error("Could not open file \"" + std::string(file_name) + "\"");
     }
 
     List<std::string> lines;
@@ -41,4 +42,8 @@ List<const char*>& AsciiTexts::get_splash() {
 
 List<const char*>& AsciiTexts::get_game_over() {
     return game_over;
+}
+
+List<const char*>& AsciiTexts::get_shop() {
+    return shop;
 }

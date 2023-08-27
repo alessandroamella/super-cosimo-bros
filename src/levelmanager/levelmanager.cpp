@@ -190,8 +190,21 @@ void LevelManager::load_first_room() {
 
 void LevelManager::restart_from_first_room() {
     get_cur_room()->freeze();
+
     cur_visited_room_index = 0;
+
+    should_load_new_room = false;
+    should_load_prev_room = false;
+
     get_cur_room()->load();
+}
+
+int LevelManager::get_cur_visited_room_index() const {
+    return cur_visited_room_index;
+}
+
+int LevelManager::get_total_visited_room_count() {
+    return visited_rooms.length();
 }
 
 void LevelManager::cleanup() {

@@ -12,3 +12,6 @@ SPIEGA suddivisione in stanze (LevelManager composto da lista di Room\* che veng
 La quantità di nemici nella stanza è lineare alla difficoltà
 La quantità di powerup segue una distribuzione quadratica
 Da difficoltà 5 in poi i nemici sparano
+Esci dal gioco con q
+Controlli WASD, in shop = idem (compra = invio)
+Entra in SHOP ogni 3 livelli

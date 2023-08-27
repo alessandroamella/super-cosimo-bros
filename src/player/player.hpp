@@ -14,21 +14,7 @@
 
 class Player : public RigidEntity {
    private:
-    enum class PlayerJumpPhase {
-        Up1 = 0,    // salta in alto 1^ volta
-        Up2 = 1,    // salta in alto 2^ volta
-        Stall = 2,  // stallo a mezzaria
-    };
     const short jumpPhasesNum = 3;
-
-    enum class PlayerControls {
-        Jump = (int)' ',
-        WalkLeft = (int)'a',
-        WalkRight = (int)'d',
-        RunLeft = 1,   // CTRL + A = 1
-        RunRight = 4,  // CTRL + S = 4
-        Shoot = (int)'e'
-    };
 
     InputManager* input_manager;
 
@@ -40,7 +26,6 @@ class Player : public RigidEntity {
     bool is_damaged;
     int damaged_ticks;
 
-    bool has_powerup;
     EntityType powerup_type;
 
     void update_jump_position();
@@ -83,12 +68,15 @@ class Player : public RigidEntity {
     void remove_health(int amount);
 
     int get_coins();
+    int* get_coins_ptr();
     void add_coins(int amount);
     void remove_coins(int amount);
 
     bool get_has_powerup();
     EntityType get_powerup_type();
-    void set_has_powerup(bool has_powerup);
+    void set_powerup_type(EntityType powerup_type);
+    EntityType* get_powerup_type_ptr();
+    void remove_powerup();
 
     bool get_is_damaged();
     void set_is_damaged(bool is_damaged);
@@ -96,6 +84,7 @@ class Player : public RigidEntity {
 
     bool has_star();
     bool should_show_star();
+    void add_star();
 
     bool should_shoot();
     void reset_shoot();

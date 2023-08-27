@@ -16,11 +16,14 @@
 #include "../powerup/powerup.hpp"
 #include "../room/room.hpp"
 #include "../shared/functions.hpp"
+#include "../shop/shop.hpp"
 
 class GameManager {
    private:
     GameTimer game_timer;
     InputManager input_manager;
+
+    Shop* shop;
 
     Maps game_maps;
     List<Room*> rooms;
@@ -38,6 +41,7 @@ class GameManager {
     void handle_enemies_shooting();
     void refresh_player();
     void game_over_screen();
+    void shop_loop();
     void main_loop();
 
    public:

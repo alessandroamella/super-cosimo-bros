@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 configure_file(${CMAKE_SOURCE_DIR}/src/asciiart/texts/splash.txt ${CMAKE_BINARY_DIR}/splash.txt COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/src/asciiart/texts/game_over.txt ${CMAKE_BINARY_DIR}/game_over.txt COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/src/asciiart/texts/shop.txt ${CMAKE_BINARY_DIR}/shop.txt COPYONLY)
 
 # linka ogni file cpp
 file(GLOB_RECURSE SRC_FILES src/*.cpp)

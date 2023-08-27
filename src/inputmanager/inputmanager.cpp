@@ -16,16 +16,24 @@ void InputManager::read_input(WINDOW* win) {
 }
 
 void InputManager::wait_for_btn(WINDOW* win, int btn) {
+    List<int> btns = List<int>();
+    btns.push(btn);
+    wait_for_btns(win, btns);
+}
+
+int InputManager::wait_for_btns(WINDOW* win, List<int> btn) {
     nodelay(win, false);
 
     while (true) {
         int ch = wgetch(win);
 
-        if (ch == (int)btn) {
+        if (btn.contains(ch)) {
             nodelay(win, true);
-            return;
+            return ch;
         }
     }
+
+    return -1;
 }
 
 void InputManager::clear_input_buff() {

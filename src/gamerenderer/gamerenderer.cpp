@@ -83,36 +83,39 @@ void GameRenderer::render_border() {
     mvwaddch(win, GAME_HEIGHT - 1, GAME_WIDTH - 1, ACS_LRCORNER);
 }
 
-void GameRenderer::render_player() {
-    Position player_pos = player->get_position();
-    Position last_player_pos = player->get_last_position();
-
-    // cancello vecchio player
-    render_str(last_player_pos, " ");
-
+void GameRenderer::render_player_character(Position position) {
     bool player_has_mushroom = player->get_has_powerup() && player->get_powerup_type() == EntityType::Mushroom;
     bool player_has_gun = player->get_has_powerup() && player->get_powerup_type() == EntityType::Gun;
     bool player_has_star = player->has_star() && player->should_show_star();
 
     if (player->get_is_damaged() && player->damaged_should_tick()) {
         wattron(win, COLOR_PAIR(TEXT_RED));
-        render_str(player_pos, player_has_mushroom ? PLAYER_POWERUP_RENDER_CHARACTER : PLAYER_RENDER_CHARACTER);
+        render_str(position, player_has_mushroom ? PLAYER_POWERUP_RENDER_CHARACTER : PLAYER_RENDER_CHARACTER);
         wattroff(win, COLOR_PAIR(TEXT_RED));
     } else if (player_has_mushroom) {
         wattron(win, COLOR_PAIR(TEXT_YELLOW));
-        render_str(player_pos, PLAYER_POWERUP_RENDER_CHARACTER);
+        render_str(position, PLAYER_POWERUP_RENDER_CHARACTER);
         wattroff(win, COLOR_PAIR(TEXT_YELLOW));
     } else if (player_has_gun) {
         wattron(win, COLOR_PAIR(TEXT_YELLOW));
-        render_str(player_pos, PLAYER_GUN_RENDER_CHARACTER);
+        render_str(position, PLAYER_GUN_RENDER_CHARACTER);
         wattroff(win, COLOR_PAIR(TEXT_YELLOW));
     } else if (player_has_star) {
         wattron(win, COLOR_PAIR(TEXT_YELLOW));
-        render_str(player_pos, PLAYER_RENDER_CHARACTER);
+        render_str(position, PLAYER_RENDER_CHARACTER);
         wattroff(win, COLOR_PAIR(TEXT_YELLOW));
     } else {
-        render_str(player_pos, PLAYER_RENDER_CHARACTER);
+        render_str(position, PLAYER_RENDER_CHARACTER);
     }
+}
+
+void GameRenderer::render_player() {
+    Position player_pos = player->get_position();
+    Position last_player_pos = player->get_last_position();
+
+    // cancello vecchio player
+    render_str(last_player_pos, " ");
+    render_player_character(player_pos);
 }
 
 void GameRenderer::render_enemies() {
@@ -243,6 +246,101 @@ void GameRenderer::refresh_screen() {
     wrefresh(win);
 }
 
+void GameRenderer::render_shop_items(List<Buyable>* items, int* currently_selected_index, int coins) {
+    int total_boxes_width = items->length() * SHOP_BOX_WIDTH;
+
+    for (int i = 0; i < items->length(); i++) {
+        Buyable item = items->at(i);
+        Position item_pos = (Position){.x = (GAME_WIDTH - total_boxes_width) / 2 + i * SHOP_BOX_WIDTH * 4 / 3, .y = 15};
+
+        int w_half = SHOP_BOX_WIDTH / 2;
+
+        wattron(win, COLOR_PAIR(i == (*currently_selected_index) ? TEXT_YELLOW : TEXT_BLUE));
+        rectangle((Position){.x = item_pos.x - w_half, .y = item_pos.y + 2}, (Position){.x = item_pos.x + w_half, .y = item_pos.y - 2});
+        wattroff(win, COLOR_PAIR(i == (*currently_selected_index) ? TEXT_YELLOW : TEXT_BLUE));
+
+        char str_to_render[STR_BUF];
+        sprintf(str_to_render, "%c %s", item.symbol, item.name);
+
+        render_str((Position){.x = item_pos.x - (int)strlen(str_to_render) / 2, .y = item_pos.y}, str_to_render);
+
+        render_str_num((Position){.x = item_pos.x - (int)strlen(str_to_render) / 2 + 1, .y = item_pos.y - 2}, " ", item.price);
+        // item.price
+    }
+}
+
+void GameRenderer::render_shop_top_bar(List<Buyable>* items, EntityType player_powerup) {
+    render_str((Position){.x = GAME_WIDTH / 3, .y = 20}, "Powerup attuale:");
+
+    wattron(win, COLOR_PAIR(TEXT_YELLOW));
+
+    bool found = false;
+    for (int i = 0; i < items->length(); i++) {
+        if (items->at(i).type == player_powerup) {
+            render_str((Position){.x = GAME_WIDTH / 3 + 18, .y = 20}, items->at(i).name);
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        render_str((Position){.x = GAME_WIDTH / 3 + 18, .y = 20}, "Nessuno");
+    }
+
+    wattroff(win, COLOR_PAIR(TEXT_YELLOW));
+
+    render_player_character((Position){.x = 2 * GAME_WIDTH / 3, .y = 20});
+
+    wattron(win, COLOR_PAIR(TEXT_YELLOW));
+    rectangle((Position){.x = 2 * GAME_WIDTH / 3 - 2, .y = 21}, (Position){.x = 2 * GAME_WIDTH / 3 + 2, .y = 19});
+    wattroff(win, COLOR_PAIR(TEXT_YELLOW));
+}
+
+void GameRenderer::render_shop_bottom_bar(int cur_rooms_completed, bool show_no_coins, bool show_bought) {
+    render_str((Position){.x = GAME_WIDTH / 3 - 17, .y = 7}, "Stanze completate");
+    render_str_num((Position){.x = GAME_WIDTH / 3 - 10, .y = 6}, "", cur_rooms_completed - 1);
+
+    render_str((Position){.x = GAME_WIDTH / 2, .y = 8}, "W");
+    render_str((Position){.x = GAME_WIDTH / 2 - 5, .y = 5}, "A");
+    render_str((Position){.x = GAME_WIDTH / 2, .y = 5}, "S");
+    render_str((Position){.x = GAME_WIDTH / 2 + 5, .y = 5}, "D");
+    rectangle((Position){.x = GAME_WIDTH / 2 - 2, .y = 9}, (Position){.x = GAME_WIDTH / 2 + 2, .y = 7});
+    rectangle((Position){.x = GAME_WIDTH / 2 - 7, .y = 6}, (Position){.x = GAME_WIDTH / 2 - 3, .y = 4});
+    rectangle((Position){.x = GAME_WIDTH / 2 - 2, .y = 6}, (Position){.x = GAME_WIDTH / 2 + 2, .y = 4});
+    rectangle((Position){.x = GAME_WIDTH / 2 + 3, .y = 6}, (Position){.x = GAME_WIDTH / 2 + 7, .y = 4});
+
+    render_str((Position){.x = 2 * GAME_WIDTH / 3, .y = 8}, "Compra");
+    render_str((Position){.x = 2 * GAME_WIDTH / 3 + 9, .y = 8}, "Spazio");
+    rectangle((Position){.x = 2 * GAME_WIDTH / 3 + 7, .y = 9}, (Position){.x = 2 * GAME_WIDTH / 3 + 16, .y = 7});
+    render_str((Position){.x = 2 * GAME_WIDTH / 3, .y = 5}, "Esci dallo shop");
+    render_str((Position){.x = 2 * GAME_WIDTH / 3 + 19, .y = 5}, "Q");
+    rectangle((Position){.x = 2 * GAME_WIDTH / 3 + 17, .y = 6}, (Position){.x = 2 * GAME_WIDTH / 3 + 21, .y = 4});
+
+    if (show_no_coins) {
+        wattron(win, COLOR_PAIR(BG_YELLOW));
+        const char* msg = " Non hai abbastanza monete! ";
+        render_str((Position){.x = GAME_WIDTH / 2 - (int)strlen(msg) / 2, .y = 11}, msg);
+        wattroff(win, COLOR_PAIR(BG_YELLOW));
+    } else if (show_bought) {
+        wattron(win, COLOR_PAIR(BG_YELLOW));
+        const char* msg = " Hai comprato il powerup! ";
+        render_str((Position){.x = GAME_WIDTH / 2 - (int)strlen(msg) / 2, .y = 11}, msg);
+        wattroff(win, COLOR_PAIR(BG_YELLOW));
+    }
+}
+
+void GameRenderer::pretty_print_coins(Position position, int amount) {
+    int coins_digits = std::to_string(amount).length();
+
+    render_str_num((Position){.x = position.x + COINS_RENDER_DIGITS - coins_digits, .y = position.y}, "", amount);
+    for (int i = 0; i < COINS_RENDER_DIGITS - coins_digits; i++) {
+        // manuale senno' stampa il padding che nasconde le cifre
+        wattron(win, COLOR_PAIR(TEXT_YELLOW));
+        mvwprintw(win, translate_y(position.y), position.x + i + 1, "%s", "0");
+        wattroff(win, COLOR_PAIR(TEXT_YELLOW));
+    }
+    wattroff(win, COLOR_PAIR(TEXT_YELLOW));
+}
+
 int GameRenderer::translate_y(int y) const {
     return GAME_HEIGHT - y;
 };
@@ -263,7 +361,7 @@ void GameRenderer::render_str_num(Position position, const char* str, int number
     wattroff(win, COLOR_PAIR(TEXT_YELLOW));
 }
 
-void GameRenderer::render_all() {
+void GameRenderer::render_game() {
     // render_debug_status();
     render_top_bar();
     render_powerups();
@@ -277,6 +375,16 @@ void GameRenderer::render_all() {
     refresh_screen();
 }
 
+void GameRenderer::render_shop(List<const char*> title, List<Buyable>* items, int* currently_selected_index, int coins, EntityType player_powerup, int cur_rooms_completed, bool show_no_coins, bool show_bought) {
+    render_2d_char_array(title, Alignment::End, Alignment::Beginning);  // title
+    render_top_bar();
+    render_border();
+    render_shop_items(items, currently_selected_index, coins);
+    render_shop_top_bar(items, player_powerup);
+    render_shop_bottom_bar(cur_rooms_completed, show_no_coins, show_bought);
+    refresh_screen();
+}
+
 void GameRenderer::render_2d_char_array(List<const char*> text, Alignment h_align, Alignment v_align) {
     clear_screen();
 
@@ -287,18 +395,18 @@ void GameRenderer::render_2d_char_array(List<const char*> text, Alignment h_alig
     int text_length = (int)(strlen(text.at(0)));
 
     while (y >= 0) {
-        int x = 0;
+        int x = RENDER_TEXT_X_PADDING;
         if (h_align == Alignment::Center) {
             x = (GAME_WIDTH - text_length) / 2;
-        } else if (h_align == Alignment::Right) {
-            x = GAME_WIDTH - text_length;
+        } else if (h_align == Alignment::End) {
+            x = GAME_WIDTH - text_length - RENDER_TEXT_X_PADDING;
         }
 
-        int y_pos = 0;
+        int y_pos = RENDER_TEXT_Y_PADDING;
         if (v_align == Alignment::Center) {
             y_pos = (GAME_HEIGHT - height) / 2;
-        } else if (v_align == Alignment::Right) {
-            y_pos = GAME_HEIGHT - height;
+        } else if (v_align == Alignment::Beginning) {
+            y_pos = GAME_HEIGHT - height - RENDER_TEXT_Y_PADDING;
         }
 
         render_str((Position){.x = x, .y = y_pos + height - y}, text.at(y));
@@ -373,23 +481,15 @@ void GameRenderer::render_top_bar() {
     }
 
     // monete
-    render_str((Position){.x = 30, .y = GAME_HEIGHT - 2}, "Coins");
+    render_str((Position){.x = 30, .y = GAME_HEIGHT - 2}, "Monete");
     wattron(win, COLOR_PAIR(TEXT_YELLOW));
     // stampa leading zeros = 3 - numero di cifre
-    int coins_digits = std::to_string(player->get_coins()).length();
-    render_str_num((Position){.x = 30 + COINS_RENDER_DIGITS - coins_digits, .y = GAME_HEIGHT - 3}, "", player->get_coins());
-    for (int i = 0; i < COINS_RENDER_DIGITS - coins_digits; i++) {
-        // manuale senno' stampa il padding che nasconde le cifre
-        wattron(win, COLOR_PAIR(TEXT_YELLOW));
-        mvwprintw(win, translate_y(GAME_HEIGHT - 3), 30 + i + 1, "%s", "0");
-        wattroff(win, COLOR_PAIR(TEXT_YELLOW));
-    }
-    wattroff(win, COLOR_PAIR(TEXT_YELLOW));
+    pretty_print_coins((Position){.x = 31, .y = GAME_HEIGHT - 3}, player->get_coins());
 
     // difficolta
-    render_str((Position){.x = 50, .y = GAME_HEIGHT - 2}, "Difficulty");
+    render_str((Position){.x = 50, .y = GAME_HEIGHT - 2}, "Difficolta'");
     wattron(win, COLOR_PAIR(TEXT_YELLOW));
-    render_str_num((Position){.x = 53, .y = GAME_HEIGHT - 3}, "", level_manager->get_cur_difficulty());
+    render_str_num((Position){.x = 54, .y = GAME_HEIGHT - 3}, "", level_manager->get_cur_difficulty());
     wattroff(win, COLOR_PAIR(TEXT_YELLOW));
 
     // TODO remove debug

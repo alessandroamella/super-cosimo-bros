@@ -18,9 +18,9 @@ Player::Player(GameTimer* timer,
       input_manager(input_manager),
       is_jumping(false),
       is_shooting(false),
-      has_powerup(false),
+      powerup_type(EntityType::None),
       health(PLAYER_STARTING_HEALTH),
-      coins(0),
+      coins(PLAYER_STARTING_COINS),
       powerups(powerups),
       is_damaged(false),
       damaged_ticks(0),
@@ -62,21 +62,23 @@ void Player::update_jump_position() {
 }
 
 void Player::process_input() {
-    if (input_manager->is_key_pressed((int)PlayerControls::Jump) && (is_on_floor() || is_on_platform()))
+    int key_pressed = input_manager->get_last_ch();
+
+    if (key_pressed == (int)PlayerControls::Jump && (is_on_floor() || is_on_platform()))
         jump();
 
-    if (input_manager->is_key_pressed((int)PlayerControls::RunLeft))
+    if (key_pressed == (int)PlayerControls::RunLeft)
         run_left();
-    else if (input_manager->is_key_pressed((int)PlayerControls::WalkLeft))
+    else if (key_pressed == (int)PlayerControls::WalkLeft)
         move_left();
-    else if (input_manager->is_key_pressed((int)PlayerControls::RunRight))
+    else if (key_pressed == (int)PlayerControls::RunRight)
         run_right();
-    else if (input_manager->is_key_pressed((int)PlayerControls::WalkRight))
+    else if (key_pressed == (int)PlayerControls::WalkRight)
         move_right();
     else if (!is_jumping)
         apply_friction();
 
-    if (input_manager->is_key_pressed((int)PlayerControls::Shoot) && has_powerup && powerup_type == EntityType::Gun)
+    if (key_pressed == (int)PlayerControls::Shoot && powerup_type == EntityType::Gun)
         shoot();
 }
 
@@ -121,11 +123,7 @@ void Player::remove_health(int amount) {
 }
 
 bool Player::get_has_powerup() {
-    return has_powerup;
-}
-
-void Player::set_has_powerup(bool _has_powerup) {
-    has_powerup = _has_powerup;
+    return powerup_type != EntityType::None;
 }
 
 bool Player::get_is_damaged() {
@@ -149,11 +147,16 @@ bool Player::damaged_should_tick() {
 }
 
 bool Player::has_star() {
-    return has_powerup && powerup_type == EntityType::Star;
+    return powerup_type == EntityType::Star;
 }
 
 bool Player::should_show_star() {
     return star_ticks % 2 == 0;
+}
+
+void Player::add_star() {
+    star_ticks = 0;
+    star_expires_at = std::chrono::steady_clock::now() + std::chrono::seconds(STAR_POWERUP_DURATION_SECONDS);
 }
 
 bool Player::should_shoot() {
@@ -170,7 +173,7 @@ void Player::tick_star() {
         return;
 
     if (std::chrono::steady_clock::now() > star_expires_at) {
-        has_powerup = false;
+        powerup_type = EntityType::None;
         star_ticks = 0;
     } else {
         star_ticks++;
@@ -185,18 +188,41 @@ void Player::refresh(Position position, List<int>* floor, List<int>* ceiling, Li
     this->powerups = powerups;
     vel_x = 0;
     vel_y = 0;
+
+    is_jumping = false;
+    is_shooting = false;
+    // powerup_type = EntityType::None;
+    is_damaged = false;
+    damaged_ticks = 0;
+    next_projectile_delay = std::chrono::steady_clock::now() + std::chrono::milliseconds(PROJECTILE_DELAY_MS);
 }
 
 EntityType Player::get_powerup_type() {
     return powerup_type;
 }
 
+void Player::set_powerup_type(EntityType _powerup_type) {
+    powerup_type = _powerup_type;
+}
+
+EntityType* Player::get_powerup_type_ptr() {
+    return &powerup_type;
+}
+
+void Player::remove_powerup() {
+    powerup_type = EntityType::None;
+}
+
 int Player::get_coins() {
     return coins;
 }
 
+int* Player::get_coins_ptr() {
+    return &coins;
+}
+
 void Player::add_coins(int amount) {
-    coins = std::min(coins + amount, PLAYER_MAX_COINS);
+    coins = std::min(std::max(coins + amount, 0), PLAYER_MAX_COINS);
 }
 
 void Player::remove_coins(int amount) {
@@ -248,14 +274,11 @@ void Player::handle_powerup_collisions() {
             switch (powerup->get_entity_type()) {
                 case EntityType::Mushroom:
                 case EntityType::Gun:
-                    has_powerup = has_powerup || powerup->get_is_active();
                     powerup_type = powerup->get_entity_type();
                     break;
                 case EntityType::Star:
-                    has_powerup = has_powerup || powerup->get_is_active();
                     powerup_type = powerup->get_entity_type();
-                    star_ticks = 0;
-                    star_expires_at = std::chrono::steady_clock::now() + std::chrono::seconds(STAR_POWERUP_DURATION_SECONDS);
+                    add_star();
                     break;
                 case EntityType::Heart:
                     add_health(HEART_HEALTH_INCREASE);

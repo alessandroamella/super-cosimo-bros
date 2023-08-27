@@ -8,7 +8,8 @@
 
 #define PLAYER_STARTING_HEALTH 50
 #define PLAYER_MAX_HEALTH 100
-#define PLAYER_MAX_COINS 999
+#define PLAYER_STARTING_COINS 50
+#define PLAYER_MAX_COINS 99
 
 #define ENEMY_STARTING_HEALTH 10
 
@@ -20,6 +21,7 @@
 #define MAX_FALL_VEL -2
 
 #define QUIT_KEY 'q'
+#define QUIT_SHOP_KEY 'q'
 
 #define PLAYER_NAME "GAETANO"
 
@@ -41,7 +43,7 @@
 #define POWERUP_RENDER_DISABLED_CHARACTER "X"
 
 #define MIN_NUMBER_OF_COINS 2
-#define COINS_RENDER_DIGITS 3
+#define COINS_RENDER_DIGITS 2
 
 #define PLAYER_DAMAGED_TOTAL_TICKS 8
 #define PLAYER_DAMAGED_BLINK_TICKS 2
@@ -63,6 +65,9 @@
 
 #define STARTING_DIFFICULTY 1
 
+#define RENDER_TEXT_Y_PADDING 3
+#define RENDER_TEXT_X_PADDING 10
+
 enum class EntityType {
     StaticEntity,
     RigidEntity,
@@ -74,11 +79,44 @@ enum class EntityType {
     Gun,
     Player,
     Enemy,
+    None,
 };
 
 enum class Direction {
     Left,
     Right,
 };
+
+struct Buyable {
+    EntityType type;
+    char symbol;
+    const char* name;
+    int price;
+};
+
+enum class ShopControls {
+    Left = 'a',
+    Right = 'd',
+    Buy = ' ',
+    Quit = QUIT_SHOP_KEY
+};
+
+enum class PlayerJumpPhase {
+    Up1 = 0,    // salta in alto 1^ volta
+    Up2 = 1,    // salta in alto 2^ volta
+    Stall = 2,  // stallo a mezzaria
+};
+
+enum class PlayerControls {
+    Jump = (int)' ',
+    WalkLeft = (int)'a',
+    WalkRight = (int)'d',
+    RunLeft = 1,   // CTRL + A = 1
+    RunRight = 4,  // CTRL + S = 4
+    Shoot = (int)'e'
+};
+
+#define STR_BUF 32
+#define SHOP_BOX_WIDTH 16
 
 #endif  // _SETTINGS_HPP_
