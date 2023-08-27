@@ -148,6 +148,9 @@ void GameManager::shop_loop() {
 
     List<int>* shop_controls = shop->get_shop_controls();
 
+    // altrimenti timer stella continua ad andare mentre si e' nello shop
+    bool player_has_star = player->has_star();
+
     while (should_continue) {
         game_renderer->render_shop(ascii_texts.get_shop(), shop->get_buyable_powerups_ptr(), shop->get_cur_index_ptr(), player->get_coins(), player->get_powerup_type(), level->get_total_visited_room_count(), shop->get_should_show_no_coins_message(), shop->get_should_show_powerup_bought_message());
         int key = input_manager.wait_for_btns(game_renderer->get_win(), *shop_controls);
@@ -157,7 +160,7 @@ void GameManager::shop_loop() {
         input_manager.clear_input_buff();
     }
 
-    if (shop->get_should_apply_star())
+    if (shop->get_should_apply_star() || player_has_star)
         player->add_star();
     shop->reset_shop_status();
     game_renderer->clear_screen();

@@ -271,6 +271,9 @@ void Player::handle_powerup_collisions() {
         Position after_pos = get_after_pos();
 
         if (powerup->get_is_active() && (powerup->is_inside(after_pos) || (powerup->is_below(position) && (powerup->is_above(after_pos) || powerup->is_inside(after_pos))) || (powerup->is_above(position) && (powerup->is_below(after_pos) || powerup->is_inside(after_pos))))) {
+            int coin_value;
+            Coin* coinPowerup;
+
             switch (powerup->get_entity_type()) {
                 case EntityType::Mushroom:
                 case EntityType::Gun:
@@ -284,9 +287,9 @@ void Player::handle_powerup_collisions() {
                     add_health(HEART_HEALTH_INCREASE);
                     break;
                 case EntityType::Coin:
-                    Coin* coinPowerup = dynamic_cast<Coin*>(powerup);
+                    coinPowerup = dynamic_cast<Coin*>(powerup);
                     if (coinPowerup) {
-                        int coin_value = coinPowerup->get_value();
+                        coin_value = coinPowerup->get_value();
                         add_coins(coin_value);
                     }
                     break;
