@@ -27,7 +27,7 @@ Room* layout1() {
     Platform _platform1((Position){.x = 111, .y = 9}, (Position){.x = 120, .y = 12});
     Platform _platform2((Position){.x = 60, .y = 10}, (Position){.x = 78, .y = 12});
     Platform _platform3((Position){.x = 65, .y = 15}, (Position){.x = 69, .y = 19});
-    Platform _platform4((Position){.x = 40, .y = 20}, (Position){.x = 57, .y = 23});
+    Platform _platform4((Position){.x = 40, .y = 20}, (Position){.x = 67, .y = 23});
 
     platforms.push(_platform1);
     platforms.push(_platform2);

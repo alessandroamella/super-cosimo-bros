@@ -3,7 +3,7 @@
 Room* layout4() {
     List<int> floor;
     for (int i = 0; i < GAME_WIDTH - 117; i++) {
-        floor.push(31);
+        floor.push(24);
     }
     for (int i = GAME_WIDTH - 117; i < GAME_WIDTH; i++) {
         floor.push(5);
@@ -61,7 +61,7 @@ Room* layout4() {
     platforms.push(_platform18);
     platforms.push(_littlestep);
 
-    StaticBox start_region = StaticBox((Position){.x = 15, .y = 29}, (Position){.x = 25, .y = 32});
+    StaticBox start_region = StaticBox((Position){.x = 5, .y = 25}, (Position){.x = 15, .y = 30});
     StaticBox end_region = StaticBox((Position){.x = 120, .y = 31}, (Position){.x = 125, .y = 36});
 
     Room* layout4 = new Room(4, floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT, start_region, end_region);
