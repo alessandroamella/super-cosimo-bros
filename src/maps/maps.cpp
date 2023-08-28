@@ -23,7 +23,10 @@ Maps::Maps() {
     rooms.push(layout5());
     rooms.push(layout6());
     rooms.push(layout7());
-    
+}
+
+List<Room*>* Maps::get_all_rooms() {
+    return &rooms;
 }
 
 Room* Maps::get_room(int index) {

@@ -16,7 +16,6 @@ Room* layout4() {
 
     List<Platform> platforms;
 
-
     // FIRST STAIRCASE
     Platform _platform1((Position){.x = 15, .y = 15}, (Position){.x = 25, .y = 21});
     Platform _platform2((Position){.x = 25, .y = 15}, (Position){.x = 30, .y = 23});
@@ -62,8 +61,7 @@ Room* layout4() {
     platforms.push(_platform18);
     platforms.push(_littlestep);
 
-
-    StaticBox start_region = StaticBox((Position){.x = 0, .y = 31}, (Position){.x = 10, .y = 36});
+    StaticBox start_region = StaticBox((Position){.x = 15, .y = 29}, (Position){.x = 25, .y = 32});
     StaticBox end_region = StaticBox((Position){.x = 120, .y = 31}, (Position){.x = 125, .y = 36});
 
     Room* layout4 = new Room(4, floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT, start_region, end_region);

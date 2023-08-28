@@ -5,16 +5,7 @@ GameManager::GameManager()
       input_manager(),
       game_maps(),
       ascii_texts() {
-    rooms = List<Room*>();
-
-    rooms.push(game_maps.get_room(0));
-    rooms.push(game_maps.get_room(1));
-    rooms.push(game_maps.get_room(2));
-    rooms.push(game_maps.get_room(3));
-    rooms.push(game_maps.get_room(4));
-    rooms.push(game_maps.get_room(5));
-    rooms.push(game_maps.get_room(6));
-
+    rooms = *game_maps.get_all_rooms();
 
     powerups = List<Powerup*>();
     level = new LevelManager(&rooms, &game_timer);

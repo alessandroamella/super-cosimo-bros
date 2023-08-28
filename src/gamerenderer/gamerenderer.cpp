@@ -214,6 +214,7 @@ void GameRenderer::render_platforms() {
 void GameRenderer::render_start_end_regions() {
     // render start region
 
+    // DEBUG uncomment
     if (level_manager->get_visited_rooms_count() > 1) {
         wattron(win, COLOR_PAIR(BG_BLUE));
         empty_rectangle(

@@ -12,6 +12,7 @@ class Maps {
 
    public:
     Maps();
+    List<Room*>* get_all_rooms();
     Room* get_room(int index);
     void cleanup();
     // eccetera per tutte le altre stanze

@@ -25,7 +25,6 @@ Room* layout7() {
 
     List<Platform> platforms;
 
-
     // FLOORS
     Platform _platform1((Position){.x = 90, .y = 27}, (Position){.x = 129, .y = 29});
     Platform _platform2((Position){.x = 35, .y = 30}, (Position){.x = 90, .y = 32});
@@ -35,10 +34,10 @@ Room* layout7() {
     Platform _platform6((Position){.x = 55, .y = 12}, (Position){.x = 80, .y = 14});
     Platform _platform7((Position){.x = 0, .y = 9}, (Position){.x = 99, .y = 11});
 
-    //COOL ARROW
-    //Base
+    // COOL ARROW
+    // Base
     Platform _platform10((Position){.x = 30, .y = 25}, (Position){.x = 42, .y = 26});
-    //Ends
+    // Ends
     Platform _platform11((Position){.x = 38, .y = 22}, (Position){.x = 41, .y = 23});
     Platform _platform12((Position){.x = 40, .y = 23}, (Position){.x = 43, .y = 24});
     Platform _platform13((Position){.x = 42, .y = 24}, (Position){.x = 45, .y = 25});
@@ -47,9 +46,8 @@ Room* layout7() {
     Platform _platform16((Position){.x = 40, .y = 27}, (Position){.x = 43, .y = 28});
     Platform _platform17((Position){.x = 38, .y = 28}, (Position){.x = 41, .y = 29});
 
-
-
-
+    // Helper (to not get softlocked)
+    Platform _platform18((Position){.x = 2, .y = 14}, (Position){.x = 7, .y = 17});
 
     platforms.push(_platform1);
     platforms.push(_platform2);
@@ -68,8 +66,9 @@ Room* layout7() {
     platforms.push(_platform16);
     platforms.push(_platform17);
 
+    platforms.push(_platform18);
 
-    StaticBox start_region = StaticBox((Position){.x = 115, .y = 29}, (Position){.x = 125, .y = 33});
+    StaticBox start_region = StaticBox((Position){.x = 114, .y = 33}, (Position){.x = 124, .y = 37});
     StaticBox end_region = StaticBox((Position){.x = 0, .y = 1}, (Position){.x = 10, .y = 6});
 
     Room* layout7 = new Room(7, floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT, start_region, end_region);
