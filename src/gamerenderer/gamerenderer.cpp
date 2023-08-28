@@ -362,6 +362,12 @@ void GameRenderer::render_str_num(Position position, const char* str, int number
     wattroff(win, COLOR_PAIR(TEXT_YELLOW));
 }
 
+void GameRenderer::render_high_score(int score) {
+    const char* title = "Stanze completate:";
+    render_str_num((Position){.x = (GAME_WIDTH - (int)strlen(title) + 1) / 2, .y = 10}, title, score);
+    refresh_screen();
+}
+
 void GameRenderer::render_game() {
     // render_debug_status();
     render_top_bar();
