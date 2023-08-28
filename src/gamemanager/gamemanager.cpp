@@ -34,7 +34,8 @@ void GameManager::handle_collisions() {
                 switch (player->get_powerup_type()) {
                     case EntityType::Mushroom:
                     case EntityType::Gun:
-                        player->set_is_damaged(true);
+                        // player->set_is_damaged(true);
+                        player->jump();
                         player->remove_powerup();
                         break;
                     case EntityType::Star:
@@ -68,12 +69,9 @@ void GameManager::handle_collisions() {
                 switch (player->get_powerup_type()) {
                     case EntityType::Mushroom:
                     case EntityType::Gun:
-                        player->set_is_damaged(true);
+                        // player->set_is_damaged(true);
+                        player->jump();
                         player->remove_powerup();
-                        break;
-                    case EntityType::Star:
-                        game_renderer->clear_point(projectile->get_position());
-                        level->get_cur_room()->remove_projectile(projectile);
                         break;
                     default:
                         break;
@@ -83,6 +81,9 @@ void GameManager::handle_collisions() {
                 player->remove_health(PROJECTILE_DAMAGE);
                 player->jump();
             }
+            // remove projectile
+            game_renderer->clear_point(projectile->get_position());
+            level->get_cur_room()->remove_projectile(projectile);
         }
 
         // with enemies
