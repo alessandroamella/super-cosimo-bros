@@ -26,13 +26,16 @@ Room* layout7() {
     List<Platform> platforms;
 
     // FLOORS
-    Platform _platform1((Position){.x = 90, .y = 27}, (Position){.x = 129, .y = 29});
+    Platform _platform1((Position){.x = 90, .y = 27}, (Position){.x = 104, .y = 29});
     Platform _platform2((Position){.x = 35, .y = 30}, (Position){.x = 90, .y = 32});
     Platform _platform3((Position){.x = 86, .y = 27}, (Position){.x = 90, .y = 30});
     Platform _platform4((Position){.x = 15, .y = 18}, (Position){.x = 35, .y = 20});
     Platform _platform5((Position){.x = 30, .y = 15}, (Position){.x = 60, .y = 17});
     Platform _platform6((Position){.x = 55, .y = 12}, (Position){.x = 80, .y = 14});
     Platform _platform7((Position){.x = 0, .y = 9}, (Position){.x = 99, .y = 11});
+    Platform _platform8((Position){.x = 104, .y = 23}, (Position){.x = 129, .y = 25});
+    Platform _platform9((Position){.x = 100, .y = 23}, (Position){.x = 104, .y = 27});
+
 
     // COOL ARROW
     // Base
@@ -47,7 +50,7 @@ Room* layout7() {
     Platform _platform17((Position){.x = 38, .y = 28}, (Position){.x = 41, .y = 29});
 
     // Helper (to not get softlocked)
-    Platform _platform18((Position){.x = 2, .y = 14}, (Position){.x = 7, .y = 17});
+    Platform _platform18((Position){.x = 2, .y = 14}, (Position){.x = 13, .y = 17});
 
     platforms.push(_platform1);
     platforms.push(_platform2);
@@ -56,6 +59,8 @@ Room* layout7() {
     platforms.push(_platform5);
     platforms.push(_platform6);
     platforms.push(_platform7);
+    platforms.push(_platform8);
+    platforms.push(_platform9);
 
     platforms.push(_platform10);
     platforms.push(_platform11);
@@ -68,7 +73,7 @@ Room* layout7() {
 
     platforms.push(_platform18);
 
-    StaticBox start_region = StaticBox((Position){.x = 114, .y = 33}, (Position){.x = 124, .y = 37});
+    StaticBox start_region = StaticBox((Position){.x = 114, .y = 36}, (Position){.x = 124, .y = 37});
     StaticBox end_region = StaticBox((Position){.x = 0, .y = 1}, (Position){.x = 10, .y = 6});
 
     Room* layout7 = new Room(7, floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT, start_region, end_region);

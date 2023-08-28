@@ -11,6 +11,12 @@
 #include "layouts/layout5.hpp"
 #include "layouts/layout6.hpp"
 #include "layouts/layout7.hpp"
+#include "layouts/layout8.hpp"
+#include "layouts/layout9.hpp"
+#include "layouts/layout10.hpp"
+#include "layouts/layout11.hpp"
+#include "layouts/layout12.hpp"
+
 
 Maps::Maps() {
     rooms = List<Room*>();
@@ -23,6 +29,11 @@ Maps::Maps() {
     rooms.push(layout5());
     rooms.push(layout6());
     rooms.push(layout7());
+    rooms.push(layout8());
+    rooms.push(layout9());
+    rooms.push(layout10());
+    rooms.push(layout11());
+    rooms.push(layout12());
 }
 
 List<Room*>* Maps::get_all_rooms() {
