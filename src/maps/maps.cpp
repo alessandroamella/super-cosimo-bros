@@ -7,12 +7,23 @@
 #include "layouts/layout2.hpp"
 #include "layouts/layout3.hpp"
 
+#include "layouts/layout4.hpp"
+#include "layouts/layout5.hpp"
+#include "layouts/layout6.hpp"
+#include "layouts/layout7.hpp"
+
 Maps::Maps() {
     rooms = List<Room*>();
 
     rooms.push(layout1());
     rooms.push(layout2());
     rooms.push(layout3());
+
+    rooms.push(layout4());
+    rooms.push(layout5());
+    rooms.push(layout6());
+    rooms.push(layout7());
+    
 }
 
 Room* Maps::get_room(int index) {
