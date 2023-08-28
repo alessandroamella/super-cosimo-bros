@@ -364,7 +364,7 @@ void GameRenderer::render_str_num(Position position, const char* str, int number
 
 void GameRenderer::render_high_score(int score) {
     const char* title = "Stanze completate:";
-    render_str_num((Position){.x = (GAME_WIDTH - (int)strlen(title) + 1) / 2, .y = 10}, title, score);
+    render_str_num((Position){.x = (GAME_WIDTH - (int)strlen(title) + 1) / 2, .y = 10}, title, score - 1);
     refresh_screen();
 }
 
@@ -497,6 +497,12 @@ void GameRenderer::render_top_bar() {
     render_str((Position){.x = 50, .y = GAME_HEIGHT - 2}, "Difficolta'");
     wattron(win, COLOR_PAIR(TEXT_YELLOW));
     render_str_num((Position){.x = 54, .y = GAME_HEIGHT - 3}, "", level_manager->get_cur_difficulty());
+    wattroff(win, COLOR_PAIR(TEXT_YELLOW));
+
+    // stanza
+    render_str((Position){.x = 70, .y = GAME_HEIGHT - 2}, "Stanza");
+    wattron(win, COLOR_PAIR(TEXT_YELLOW));
+    render_str_num((Position){.x = 71, .y = GAME_HEIGHT - 3}, "", level_manager->get_visited_rooms_count());
     wattroff(win, COLOR_PAIR(TEXT_YELLOW));
 
     // TODO remove debug
