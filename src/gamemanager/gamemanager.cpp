@@ -5,10 +5,13 @@ GameManager::GameManager()
       input_manager(),
       game_maps(),
       ascii_texts() {
+    std::srand((unsigned)std::time(nullptr));
+
     rooms = *game_maps.get_all_rooms();
 
     powerups = List<Powerup*>();
     level = new LevelManager(&rooms, &game_timer);
+    level->initialize(STARTING_DIFFICULTY);
     player = new Player(&game_timer, &input_manager, level->get_cur_room()->get_player_start_position(), &level->get_cur_room()->get_floor(), &level->get_cur_room()->get_ceiling(), &level->get_cur_room()->get_platforms(), &powerups);
     shop = new Shop(player, &input_manager);
     game_renderer = new GameRenderer(player, level, &game_timer);
@@ -187,8 +190,11 @@ void GameManager::main_loop() {
                     input_manager.wait_for_btn(game_renderer->get_win(), ' ');
                     game_renderer->clear_screen();
 
+                    int last_difficulty = level->get_cur_difficulty();
+
                     // restart game (reset player health and position, current room back to first room)
-                    level->restart_from_first_room();
+                    level->initialize(last_difficulty);
+                    level->load_first_room();
                     refresh_player();
                     player->set_health(PLAYER_STARTING_HEALTH);
                     player->set_position(level->get_cur_room()->get_player_start_position());
@@ -215,8 +221,6 @@ void GameManager::main_loop() {
 }
 
 void GameManager::begin() {
-    std::srand(std::time(nullptr));
-
     splash_screen();  // wait for ' ' to start
     level->load_first_room();
     refresh_player();

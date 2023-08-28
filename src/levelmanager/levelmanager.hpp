@@ -31,6 +31,8 @@ class LevelManager {
    public:
     LevelManager(List<Room*>* rooms, GameTimer* game_timer);
 
+    void initialize(int starting_difficulty);
+
     Room* get_cur_room();
     int get_cur_difficulty();
     int get_visited_rooms_count();
@@ -39,7 +41,6 @@ class LevelManager {
     void execute_room_change();
 
     void load_first_room();
-    void restart_from_first_room();
 
     int get_cur_visited_room_index() const;
     int get_total_visited_room_count();

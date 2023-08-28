@@ -14,7 +14,15 @@ LevelManager::LevelManager(List<Room*>* rooms, GameTimer* game_timer)
       game_timer(game_timer),
       should_load_new_room(false),
       should_load_prev_room(false) {
-    RoomState starting_room_state(get_random_room(), STARTING_DIFFICULTY);
+}
+
+void LevelManager::initialize(int starting_difficulty) {
+    cur_visited_room_index = 0;
+    cleanup();  // clear visited_rooms
+    should_load_new_room = false;
+    should_load_prev_room = false;
+
+    RoomState starting_room_state(get_random_room(), starting_difficulty);
     visited_rooms.push(starting_room_state);
 }
 
@@ -192,17 +200,6 @@ void LevelManager::load_first_room() {
     get_cur_room()->load();
 }
 
-void LevelManager::restart_from_first_room() {
-    get_cur_room()->freeze();
-
-    cur_visited_room_index = 0;
-
-    should_load_new_room = false;
-    should_load_prev_room = false;
-
-    get_cur_room()->load();
-}
-
 int LevelManager::get_cur_visited_room_index() const {
     return cur_visited_room_index;
 }
@@ -217,6 +214,7 @@ void LevelManager::cleanup() {
         room->cleanup();
         delete room;
     }
+    visited_rooms.clear();
 }
 
 void LevelManager::tick(Position player_position) {
