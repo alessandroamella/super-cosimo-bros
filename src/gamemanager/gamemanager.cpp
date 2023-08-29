@@ -191,7 +191,7 @@ void GameManager::main_loop() {
                 if (player->get_health() <= 0) {
                     // game over and wait for ' ' to restart
                     game_over_screen();
-                    game_renderer->render_high_score(level->get_total_visited_room_count());
+                    game_renderer->render_high_score(level->get_total_visited_room_count(), level->get_cur_difficulty());
 
                     input_manager.wait_for_btn(game_renderer->get_win(), ' ');
                     game_renderer->clear_screen();
