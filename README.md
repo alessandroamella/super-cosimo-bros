@@ -52,7 +52,11 @@ In una stanza, basta che il protagonista entri nel punto di partenza della stanz
 
 ### Game over
 
-Quando il giocatore ha 0 hp, la partita termina e viene mostrata la schermata "Game Over", con il numero di stanze completate nella partita.
+Quando il giocatore ha 0 hp, la partita termina e viene mostrata la schermata "Game Over", con il numero di stanze completate nella partita ed il grado difficoltà massimo dei livelli completati.
+
+Premendo lo spazio verrà iniziata una nuova partita, dove il primo livello avrà una difficoltà uguale alla difficoltà dell'ultimo livello della partita precedente.
+
+Se invece si desidera iniziare una nuova partita con difficoltà minima, basta riavviare il gioco.
 
 ## Salute
 
@@ -126,7 +130,7 @@ Man mano che la difficoltà aumenta (vedi sottocapitolo "Difficoltà crescente")
 
 Per ogni livello che passa, la difficoltà di completamento aumenta.
 
-La difficoltà è equivalente al numero di stanze completate.
+Nella prima partita, la difficoltà è equivalente al numero di stanze completate. Nelle partite seguenti, la difficoltà continua ad aumentare anche se il giocatore è morto.
 
 Specifiche:
 
@@ -134,14 +138,15 @@ Specifiche:
 -   Dal grado di difficoltà 5 in poi, i nemici sparano proiettili
 -   La quantità di potenziamenti nei livello segue la funzione $$ y = - \sqrt{x} + 4 $$
     dove l'asse delle ascisse rappresenta il grado di difficoltà mentre l'asse delle ordinate rappresenta il numero di powerups nel livello.
-    N.B: Ci sarà sempre almeno un powerup per ogni grado difficoltà.
+    N.B: Ci sarà sempre almeno un powerup per ogni grado di difficoltà.
 
 ## Conclusione
 
 Buon divertimento!
 
 Credits: Alessandro Amella, Michele Garavani, Simone Ballo
-2023
+
+Italia, Svizzera, 2023
 
 ---
 

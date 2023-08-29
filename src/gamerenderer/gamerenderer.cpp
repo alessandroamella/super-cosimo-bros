@@ -362,9 +362,11 @@ void GameRenderer::render_str_num(Position position, const char* str, int number
     wattroff(win, COLOR_PAIR(TEXT_YELLOW));
 }
 
-void GameRenderer::render_high_score(int score) {
+void GameRenderer::render_high_score(int score, int difficulty) {
     const char* title = "Stanze completate:";
     render_str_num((Position){.x = (GAME_WIDTH - (int)strlen(title) + 1) / 2, .y = 10}, title, score - 1);
+    const char* title_2 = "Massima difficoltà completata:";
+    render_str_num((Position){.x = (GAME_WIDTH - (int)strlen(title_2) + 1) / 2, .y = 8}, title_2, difficulty - 1);
     refresh_screen();
 }
 
