@@ -6,6 +6,8 @@ In questo mini-videogame, il giocatore veste i panni di Gaetano, rappresentato d
 
 L'obiettivo? Sopravvivere il maggior numero di livelli possibile, senza venire ucciso dagli insidiosi nemici.
 
+[Gameplay](https://drive.google.com/file/d/15I3-gYn0vnf0aKTg7Fa9XqAyP8_wu2ng/view?usp=sharing).
+
 Di seguito vengono elencate le istruzioni e le specifiche generali del gioco.
 
 ## Indice

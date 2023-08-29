@@ -37,7 +37,7 @@ Room* layout2() {
     platforms.push(_platform3);
     platforms.push(_platform4);
 
-    StaticBox start_region = StaticBox((Position){.x = 1, .y = 1}, (Position){.x = 7, .y = 6});
+    StaticBox start_region = StaticBox((Position){.x = 1, .y = 3}, (Position){.x = 7, .y = 6});
     StaticBox end_region = StaticBox((Position){.x = 111, .y = 30}, (Position){.x = 121, .y = 32});
     // TODO debug
     // StaticBox end_region = StaticBox((Position){.x = 20, .y = 5}, (Position){.x = 26, .y = 8});
