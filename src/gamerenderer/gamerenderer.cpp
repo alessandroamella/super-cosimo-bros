@@ -525,25 +525,3 @@ void GameRenderer::render_top_bar() {
     // render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 4}, "end_x to", (int)level_manager->get_cur_room()->get_end_region().get_ur().x);
     // render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 5}, "end_y to", (int)level_manager->get_cur_room()->get_end_region().get_ur().y);
 }
-
-void GameRenderer::render_debug_status() {
-    // render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 1}, "last_tick", (int)(game_timer->last_tick_time.time_since_epoch() / std::chrono::milliseconds(1)));
-
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 6}, "is_on_floor", (int)player->is_on_floor());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 7}, "is_touching_ceiling", (int)player->is_touching_ceiling());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 8}, "has_wall_on_left", (int)player->has_wall_on_left());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 9}, "has_wall_on_right", (int)player->has_wall_on_right());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 10}, "is_jumping", (int)player->is_jumping);
-
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 12}, "vel_x", (int)player->vel_x);
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 13}, "vel_y", (int)player->vel_y);
-
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 15}, "x", (int)player->get_position().x);
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 16}, "y", (int)player->get_position().y);
-
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 18}, "floor[x]", (int)level_manager->get_cur_room()->get_floor_at(player->get_position().x));
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 19}, "ceiling[x]", (int)level_manager->get_cur_room()->get_ceiling_at(player->get_position().x));
-
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 21}, "health", (int)player->get_health());
-    render_str_num((Position){.x = 2, .y = GAME_HEIGHT - 22}, "on_platform", (int)player->is_on_platform());
-}

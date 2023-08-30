@@ -39,7 +39,6 @@ class GameRenderer {
     int translate_y(int y) const;
     Position translate_position(Position position) const;
     void render_str(Position position, const char* str) const;
-    void render_debug_status();
 
    public:
     GameRenderer(Player* player, LevelManager* level_manager, GameTimer* timer);

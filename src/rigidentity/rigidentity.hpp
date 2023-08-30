@@ -36,6 +36,16 @@ class RigidEntity : public StaticEntity {
     void clamp_position();
     void clamp_velocity();
 
+    bool is_on_floor();
+    bool is_touching_ceiling();
+    Position get_after_pos();
+    bool has_wall_on_left();
+    bool has_wall_on_right();
+    bool is_on_platform();
+    int vel_x;
+    int vel_y;
+    Position last_position;
+
    public:
     RigidEntity(GameTimer* timer, Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms);
     Position get_last_position();
@@ -46,17 +56,6 @@ class RigidEntity : public StaticEntity {
     Direction get_direction();
 
     bool is_out_of_bounds();
-
-    // TODO finito il debug, sposta in private
-    bool is_on_floor();
-    bool is_touching_ceiling();
-    Position get_after_pos();
-    bool has_wall_on_left();
-    bool has_wall_on_right();
-    bool is_on_platform();
-    int vel_x;
-    int vel_y;
-    Position last_position;
 };
 
 #endif  // _RIGIDENTITY_HPP_

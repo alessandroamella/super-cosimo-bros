@@ -9,7 +9,6 @@
 #include "../hitbox/hitbox.hpp"
 #include "../levelmanager/levelmanager.hpp"
 #include "../list/list.hpp"
-#include "../list/list2d.hpp"
 #include "../maps/maps.hpp"
 #include "../mushroom/mushroom.hpp"
 #include "../player/player.hpp"
