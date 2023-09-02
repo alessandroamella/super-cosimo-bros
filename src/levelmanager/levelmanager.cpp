@@ -34,10 +34,6 @@ int LevelManager::get_cur_difficulty() {
 }
 
 Room* LevelManager::get_random_room() {
-    // DEBUG only
-    // const int debug_room_index = 1;
-    // return rooms->at(debug_room_index)->clone();
-
     int index = rand() % rooms->length();
 
     if (visited_rooms.length() > 0) {

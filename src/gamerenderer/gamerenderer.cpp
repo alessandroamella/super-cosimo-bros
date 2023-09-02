@@ -213,8 +213,6 @@ void GameRenderer::render_platforms() {
 
 void GameRenderer::render_start_end_regions() {
     // render start region
-
-    // DEBUG uncomment
     if (level_manager->get_visited_rooms_count() > 1) {
         wattron(win, COLOR_PAIR(BG_BLUE));
         empty_rectangle(
@@ -371,7 +369,6 @@ void GameRenderer::render_high_score(int score, int difficulty) {
 }
 
 void GameRenderer::render_game() {
-    // render_debug_status();
     render_top_bar();
     render_powerups();
     render_start_end_regions();
@@ -506,22 +503,4 @@ void GameRenderer::render_top_bar() {
     wattron(win, COLOR_PAIR(TEXT_YELLOW));
     render_str_num((Position){.x = 71, .y = GAME_HEIGHT - 3}, "", level_manager->get_visited_rooms_count());
     wattroff(win, COLOR_PAIR(TEXT_YELLOW));
-
-    // TODO remove debug
-    // debug: print player coordinates
-    // render_str_num((Position){.x = 70, .y = GAME_HEIGHT - 2}, "x", (int)player->get_position().x);
-    // render_str_num((Position){.x = 70, .y = GAME_HEIGHT - 3}, "y", (int)player->get_position().y);
-
-    // debug: print health num
-    // render_str_num((Position){.x = 68, .y = GAME_HEIGHT - 5}, "health", (int)player->get_health());
-
-    // print start end regions
-    // render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 2}, "start_x from", (int)level_manager->get_cur_room()->get_start_region().get_position().x);
-    // render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 3}, "start_y from", (int)level_manager->get_cur_room()->get_start_region().get_position().y);
-    // render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 4}, "start_x to", (int)level_manager->get_cur_room()->get_start_region().get_ur().x);
-    // render_str_num((Position){.x = 78, .y = GAME_HEIGHT - 5}, "start_y to", (int)level_manager->get_cur_room()->get_start_region().get_ur().y);
-    // render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 2}, "end_x from", (int)level_manager->get_cur_room()->get_end_region().get_position().x);
-    // render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 3}, "end_y from", (int)level_manager->get_cur_room()->get_end_region().get_position().y);
-    // render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 4}, "end_x to", (int)level_manager->get_cur_room()->get_end_region().get_ur().x);
-    // render_str_num((Position){.x = 94, .y = GAME_HEIGHT - 5}, "end_y to", (int)level_manager->get_cur_room()->get_end_region().get_ur().y);
 }

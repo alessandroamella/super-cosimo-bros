@@ -31,7 +31,6 @@ bool StaticBox::is_touching_ceiling(Position input_pos) {
 }
 
 bool StaticBox::is_x_within(int x) {
-    // TODO + 1 e' giusto?
     return is_in(x, position.x + 1, ur.x);
 }
 
