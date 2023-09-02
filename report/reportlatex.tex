@@ -37,7 +37,7 @@ Abbiamo voluto sviluppare la nostra versione del gioco, denominata \textbf{Gaeta
 \item \textbf{Encapsulation}: nascondere i dettagli di implementazione delle classi mantenendoli privati, fornendo esclusivamente interfacce pubbliche per interagire con il resto del codice.
 \end{itemize}
 
-Questo approccio ci ha permesso di ottenere un codice altamente modulare, il quale ha permesso di apportare facilmente modifiche, anche drastiche. Inoltre ha semplificato l'interazione tra i vari componenti del gruppo, poiché hanno potuto utilizzare le interfacce pubbliche delle classi senza dover conoscere i dettagli di implementazione sottostanti.
+Questo approccio ha portato un codice altamente modulare, il quale ha permesso di apportare facilmente modifiche, anche drastiche. Inoltre ha semplificato l'interazione tra i vari componenti del gruppo, poiché hanno potuto utilizzare le interfacce pubbliche delle classi senza dover conoscere i dettagli di implementazione sottostanti.
 
 
 \section{Implementazione}
@@ -45,7 +45,7 @@ Questo approccio ci ha permesso di ottenere un codice altamente modulare, il qua
 Per rendere il codice del nostro gioco più modulare e manutenibile, evitando di fare un \textit{hard-coding} di valori specifici all'interno del codice, abbiamo separato le costanti e le funzioni condivise in file distinti nella cartella \texttt{src/shared}. Il file \texttt{settings.hpp} contiene svariate costanti e strutture dati che regolano i vari comportamenti del gioco, come le dimensioni della finestra di gioco, mentre il file \texttt{functions.hpp} contiene funzioni comuni usate ampiamente in diverse parti del codice, come la funzione \texttt{clamp()} o \texttt{collides()}.
 
 \subsection{Gestione centralizzata}
-Abbiamo subito pensato che, per unire tutti gli aspetti del gioco, avremmo avuto bisogno di una classe centralizzata che si occupasse di gestire il flusso complessivo del gioco, l’unica classe a conoscenza di tutte le altre classi. Abbiamo chiamato tale classe \texttt{GameManager}. Tale classe, infatti, gestisce l'inizializzazione del gioco, il ciclo di gioco principale, le interazioni dei giocatori, le collisioni, il rendering, le condizioni di game over, e in generale ogni situazione in cui viene richiesta la conoscenza di dati tra classi isolate tra loro (ad esempio, le collisioni tra il player e i nemici). Tutte le altre classi, direttamente o indirettamente, vengono implementate in \texttt{GameManager}.
+Abbiamo subito pensato che, per unire tutti gli aspetti del gioco, avremmo avuto bisogno di una classe centralizzata che si occupasse di gestire il flusso complessivo del gioco, l'unica classe a conoscenza di tutte le altre classi. Abbiamo chiamato tale classe \texttt{GameManager}. Tale classe, infatti, gestisce l'inizializzazione del gioco, il ciclo di gioco principale, le interazioni dei giocatori, le collisioni, il rendering, le condizioni di game over, e in generale ogni situazione in cui viene richiesta la conoscenza di dati tra classi isolate tra loro (ad esempio, le collisioni tra il player e i nemici). Tutte le altre classi, direttamente o indirettamente, vengono implementate in \texttt{GameManager}.
 
 \subsection{Logica di tick}
 Il nostro gioco usa una \textbf{logica di tick} per aggiornare lo stato del gioco e gestire gli eventi in modo sincronizzato. Un tick è un'unità di tempo che rappresenta un intervallo fisso, definito dalla costante \texttt{TICK\_INTERVAL} nel file \texttt{src/shared/settings.hpp}. Ad ogni tick, il gioco esegue una serie di operazioni che influenzano il comportamento degli oggetti e delle entità nel gioco.
@@ -68,7 +68,7 @@ Abbiamo naturalmente definito ed esposto metodi pubblici per l'accesso e la modi
 Abbiamo deciso di raggruppare la gestione degli input da tastiera dell'utente nella classe \texttt{InputManager}. Ciò che succede se i tasti vengono premuti viene definito nelle classi specifiche. Ad esempio, le azioni dei comandi del giocatore sono definite nella classe \texttt{Player}. I comandi dello shop sono gestiti nella classe \texttt{Shop}. Il tasto '\texttt{q}', che permette di uscire dal gioco, viene gestito nella classe \texttt{GameManager}. 
 
 \subsection{Entità}
-Per implementare le varie entità del progetto abbiamo pensato di usufruire dell’ereditarietà tra classi. Abbiamo iniziato con la classe base \texttt{StaticEntity}, usata come classe astratta per rappresentare una generica entità la cui posizione resta costante nel tempo, alla base di molte altre classi.
+Per implementare le varie entità del progetto abbiamo pensato di usufruire dell'ereditarietà tra classi. Abbiamo iniziato con la classe base \texttt{StaticEntity}, usata come classe astratta per rappresentare una generica entità la cui posizione resta costante nel tempo, alla base di molte altre classi.
 \begin{figure}
 \centering
 \includegraphics[width=0.4\textwidth]{hierarchy.png}
@@ -95,13 +95,13 @@ Per implementare le varie entità del progetto abbiamo pensato di usufruire dell
 %\end{comment}
 
 
-Per creare i potenziamenti e la valuta, in quanto entità, abbiamo usufruito dell’ereditarietà. Abbiamo prima di tutto creato la classe \texttt{StaticBox}, composta di due punti, che possono formare un rettangolo rappresentato dalle coordinate in basso a destra e in alto a sinistra.
+Per creare i potenziamenti e la valuta, in quanto entità, abbiamo usufruito dell'ereditarietà. Abbiamo prima di tutto creato la classe \texttt{StaticBox}, composta di due punti, che possono formare un rettangolo rappresentato dalle coordinate in basso a destra e in alto a sinistra.
 Abbiamo poi creato la sottoclasse \texttt{Powerup}, da cui vengono create le classi con i vari potenziamenti singoli. Le abilità dei potenziamenti vengono come al solito gestite da \texttt{GameManager} (ad esempio, essendo in carico delle collisioni, farà sì che il player non subisca danno quando esso possiede il powerup \textit{stella} e viene colpito da un nemico).\\
 
 Per implementare le "\textit{rigid entities}", ovvero le entità dotate di velocità, abbiamo aggiunto attributi importanti come ad esempio:
 \begin{itemize}
-\item Le velocità orizzontali e verticali dell’entità.
-\item Un riferimento alle regioni di inizio e di fine, alle piattaforme, all’altezza del pavimento e del soffitto della stanza attuale.
+\item Le velocità orizzontali e verticali dell'entità.
+\item Un riferimento alle regioni di inizio e di fine, alle piattaforme, all'altezza del pavimento e del soffitto della stanza attuale.
 \item Un metodo \texttt{tick()} che controlla le collisioni, aggiorna la velocità e la posizione.
 \end{itemize}
 
@@ -110,7 +110,7 @@ Da questa classe, chiamata \texttt{RigidEntity}, derivano altre classi chiave ne
 Similmente vengono create anche le classi figlie di \texttt{RigidEntity} che gestiscono nemici e proiettili.
 
 \subsection{Livelli}
-Un altro aspetto molto importante del gioco è la suddivisione in livelli. Abbiamo pensato di implementare una struttura a stanze (classe \texttt{Room}). Il player può andare avanti e indietro tra le stanze entrando nelle \textbf{regioni di inizio e fine} (implementate come \texttt{StaticBox}). Una stanza è definita con vari parametri, tra cui una lista delle sue piattaforme, le sue dimensioni, l’altezza del pavimento e del soffitto, regioni di inizio e fine: questi parametri sono ciò che rendono le stanze diverse tra loro.
+Un altro aspetto molto importante del gioco è la suddivisione in livelli. Abbiamo pensato di implementare una struttura a stanze (classe \texttt{Room}). Il player può andare avanti e indietro tra le stanze entrando nelle \textbf{regioni di inizio e fine} (implementate come \texttt{StaticBox}). Una stanza è definita con vari parametri, tra cui una lista delle sue piattaforme, le sue dimensioni, l'altezza del pavimento e del soffitto, regioni di inizio e fine: questi parametri sono ciò che rendono le stanze diverse tra loro.
 I layout delle varie stanze, ciascuno definito all'interno di un file \texttt{layout<i>.cpp}, sono tutti accessibili attraverso i metodi pubblici di \texttt{Maps}, creata per combinare i layout in un'unica classe.
 
 La classe \texttt{LevelManager}, la quale contiene una lista di stanze istanziabili (che punta alle mappe salvate all'interno di \texttt{Maps}), si occupa di gestire il cambiamento di stanza. Essa possiede: 
@@ -121,18 +121,18 @@ La classe \texttt{LevelManager}, la quale contiene una lista di stanze istanziab
 \end{itemize} 
 
 In tal modo il player può fare avanti e indietro tra le stanze e la difficoltà viene impostata correttamente.
-Quando il giocatore si posiziona alla regione di inizio di una stanza (ed essa non è la prima stanza), allora l’indice \texttt{cur\_visited\_room\_index} viene decrementato e di conseguenza \texttt{get\_cur\_room()} restituirà la stanza precedente.
+Quando il giocatore si posiziona alla regione di inizio di una stanza (ed essa non è la prima stanza), allora l'indice \texttt{cur\_visited\_room\_index} viene decrementato e di conseguenza \texttt{get\_cur\_room()} restituirà la stanza precedente.
 In modo analogo, se il player si trova alla regione di fine, allora l'indice viene incrementato. 
 
-Se l’indice è già a \texttt{visited\_rooms.length() - 1}, allora \texttt{LevelManager} provvede a istanziare una nuova stanza scelta casualmente, inserendola all'interno di \texttt{visited\_rooms} con tanto di nuova difficoltà, pari alla $\text{difficoltà precedente} + 1$.
+Se l'indice è già a \texttt{visited\_rooms.length() - 1}, allora \texttt{LevelManager} provvede a istanziare una nuova stanza scelta casualmente, inserendola all'interno di \texttt{visited\_rooms} con tanto di nuova difficoltà, pari alla $\text{difficoltà precedente} + 1$.
 
 Prima di incrementare l'indice, \texttt{LevelManager} chiama un apposito metodo per istanziare i nemici casualmente, di numero pari alla difficoltà, e powerup e monete, tentando di inserire casualmente almeno $2$ monete e un numero di powerup pari a $y = \max\left(-\sqrt{x} + 4, 1\right)$. \\
 
-Quando il player muore e riavvia il gioco, l’indice viene riportato a 0 e gli elementi della lista di stanze visitate svuotata, ma la difficoltà, come da consegna, viene mantenuta.
+Quando il player muore e riavvia il gioco, l'indice viene riportato a 0 e gli elementi della lista di stanze visitate svuotata, ma la difficoltà, come da consegna, viene mantenuta.
 
 \subsection{Shop}
 
-Abbiamo infine creato la pagina dello shop, con la sua interfaccia grafica e le sue funzionalità (comprare potenziamenti). Abbiamo poi aggiunto l’istanza dello shop in \texttt{GameManager}, facendo in modo che lo shop compaia all’inizio del gioco e \textbf{ogni tre stanze}.
+Abbiamo infine creato la pagina dello shop, con la sua interfaccia grafica e le sue funzionalità (comprare potenziamenti). Abbiamo poi aggiunto l'istanza dello shop in \texttt{GameManager}, facendo in modo che lo shop compaia all'inizio del gioco e \textbf{ogni tre stanze}.
 
 \appendix
 \section{Contatti}
