@@ -39,8 +39,6 @@ Room* layout2() {
 
     StaticBox start_region = StaticBox((Position){.x = 1, .y = 3}, (Position){.x = 7, .y = 6});
     StaticBox end_region = StaticBox((Position){.x = 111, .y = 30}, (Position){.x = 121, .y = 32});
-    // TODO debug
-    // StaticBox end_region = StaticBox((Position){.x = 20, .y = 5}, (Position){.x = 26, .y = 8});
 
     Room* layout2 = new Room(2, floor, ceiling, platforms, GAME_WIDTH, GAME_HEIGHT, start_region, end_region);
 

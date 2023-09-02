@@ -14,12 +14,9 @@ Room* layout3() {
     List<Platform> platforms;
 
     // DIVIDERS
-    // TODO debug, rimetti y = 0 nel 1 e 3
     Platform _divider1((Position){.x = 30, .y = 0}, (Position){.x = 31, .y = 31});
-    // Platform _divider1((Position){.x = 30, .y = 3}, (Position){.x = 31, .y = 31});
     Platform _divider2((Position){.x = 60, .y = 3}, (Position){.x = 61, .y = 32});
     Platform _divider3((Position){.x = 90, .y = 0}, (Position){.x = 91, .y = 33});
-    // Platform _divider3((Position){.x = 90, .y = 3}, (Position){.x = 91, .y = 33});
 
     // PLATFORMS FIRST PIECE
     Platform _platform1((Position){.x = 0, .y = 5}, (Position){.x = 20, .y = 6});

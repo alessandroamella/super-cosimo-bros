@@ -41,8 +41,6 @@ void Player::jump() {
 }
 
 void Player::update_jump_position() {
-    // TODO controlla se sul pavimento
-
     switch (jump_phase) {
         case PlayerJumpPhase::Stall:
             vel_y = 0;
