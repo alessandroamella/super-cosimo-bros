@@ -1,7 +1,7 @@
 #include "enemy.hpp"
 
-Enemy::Enemy(GameTimer* timer, Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms)
-    : RigidEntity(timer, position, floor, ceiling, platforms),
+Enemy::Enemy(Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms)
+    : RigidEntity(position, floor, ceiling, platforms),
       health(ENEMY_STARTING_HEALTH),
       is_dead(false),
       next_projectile_delay(std::chrono::steady_clock::now() + std::chrono::milliseconds(PROJECTILE_DELAY_MS)) {}

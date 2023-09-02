@@ -48,8 +48,7 @@ class Player : public RigidEntity {
     std::chrono::steady_clock::time_point next_projectile_delay;
 
    public:
-    Player(GameTimer* timer,
-           InputManager* input_manager,
+    Player(InputManager* input_manager,
            Position position,
            List<int>* floor,
            List<int>* ceiling,

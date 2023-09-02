@@ -9,14 +9,14 @@ GameManager::GameManager()
 
     rooms = *game_maps.get_all_rooms();
     // Layouts Debug ONLY!!
-    //rooms = List<Room*>();
-    //rooms.push(game_maps.get_room(0));
-    //rooms.push(game_maps.get_room(1));
+    // rooms = List<Room*>();
+    // rooms.push(game_maps.get_room(0));
+    // rooms.push(game_maps.get_room(1));
 
     powerups = List<Powerup*>();
-    level = new LevelManager(&rooms, &game_timer);
+    level = new LevelManager(&rooms);
     level->initialize(STARTING_DIFFICULTY);
-    player = new Player(&game_timer, &input_manager, level->get_cur_room()->get_player_start_position(), &level->get_cur_room()->get_floor(), &level->get_cur_room()->get_ceiling(), &level->get_cur_room()->get_platforms(), &powerups);
+    player = new Player(&input_manager, level->get_cur_room()->get_player_start_position(), &level->get_cur_room()->get_floor(), &level->get_cur_room()->get_ceiling(), &level->get_cur_room()->get_platforms(), &powerups);
     shop = new Shop(player, &input_manager);
     game_renderer = new GameRenderer(player, level, &game_timer);
 
@@ -114,7 +114,7 @@ void GameManager::handle_player_shooting() {
     if (player->should_shoot()) {
         Room* cur_room = level->get_cur_room();
         Position projectile_position = (Position){.x = player->get_position().x + (player->get_direction() == Direction::Left ? -1 : 1), .y = player->get_position().y};
-        Projectile* projectile = new Projectile(&game_timer, projectile_position, &cur_room->get_floor(), &cur_room->get_ceiling(), &cur_room->get_platforms(), EntityType::Player);
+        Projectile* projectile = new Projectile(projectile_position, &cur_room->get_floor(), &cur_room->get_ceiling(), &cur_room->get_platforms(), EntityType::Player);
         level->get_cur_room()->add_projectile(projectile);
         projectile->start(player->get_direction());
         player->reset_shoot();
@@ -128,7 +128,7 @@ void GameManager::handle_enemies_shooting() {
         Enemy& enemy = cur_room->get_enemies().at(i);
 
         if (!enemy.get_is_dead() && enemy.should_shoot() && level->get_cur_difficulty() >= ENEMY_SHOOTING_MIN_DIFFICULTY) {
-            Projectile* projectile = new Projectile(&game_timer, enemy.get_position(), &cur_room->get_floor(), &cur_room->get_ceiling(), &cur_room->get_platforms(), EntityType::Enemy);
+            Projectile* projectile = new Projectile(enemy.get_position(), &cur_room->get_floor(), &cur_room->get_ceiling(), &cur_room->get_platforms(), EntityType::Enemy);
             cur_room->add_projectile(projectile);
             projectile->start(enemy.get_direction());
             enemy.reset_shoot();

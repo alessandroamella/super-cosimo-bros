@@ -17,7 +17,7 @@ class Projectile : public RigidEntity {
     EntityType shot_by;
 
    public:
-    Projectile(GameTimer* timer, Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms, EntityType shot_by);
+    Projectile(Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms, EntityType shot_by);
 
     bool is_out_of_bounds();
 

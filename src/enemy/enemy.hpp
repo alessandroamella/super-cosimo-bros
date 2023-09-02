@@ -26,7 +26,7 @@ class Enemy : public RigidEntity {
     std::chrono::steady_clock::time_point next_projectile_delay;
 
    public:
-    Enemy(GameTimer* timer, Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms);
+    Enemy(Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms);
 
     int get_health();
     void remove_health();

@@ -14,8 +14,6 @@ class RigidEntity : public StaticEntity {
    protected:
     EntityType type;
 
-    GameTimer* game_timer;
-
     List<int>* floor;
     List<int>* ceiling;
 
@@ -47,7 +45,7 @@ class RigidEntity : public StaticEntity {
     Position last_position;
 
    public:
-    RigidEntity(GameTimer* timer, Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms);
+    RigidEntity(Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms);
     Position get_last_position();
     void reset_position();
     Position get_velocity();

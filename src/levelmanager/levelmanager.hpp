@@ -8,7 +8,6 @@
 
 class LevelManager {
    private:
-    GameTimer* game_timer;
     List<Room*>* rooms;
 
     List<RoomState> visited_rooms;
@@ -29,7 +28,7 @@ class LevelManager {
     int get_powerup_number(int difficulty);
 
    public:
-    LevelManager(List<Room*>* rooms, GameTimer* game_timer);
+    LevelManager(List<Room*>* rooms);
 
     void initialize(int starting_difficulty);
 

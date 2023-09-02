@@ -7,14 +7,13 @@
 #include "../shared/functions.hpp"
 #include "../star/star.hpp"
 
-Player::Player(GameTimer* timer,
-               InputManager* input_manager,
+Player::Player(InputManager* input_manager,
                Position position,
                List<int>* floor,
                List<int>* ceiling,
                List<Platform>* platforms,
                List<Powerup*>* powerups)
-    : RigidEntity(timer, position, floor, ceiling, platforms),
+    : RigidEntity(position, floor, ceiling, platforms),
       input_manager(input_manager),
       is_jumping(false),
       is_shooting(false),

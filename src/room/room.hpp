@@ -2,7 +2,6 @@
 #define _ROOM_HPP_
 
 #include "../enemy/enemy.hpp"
-#include "../gametimer/gametimer.hpp"
 #include "../list/list.hpp"
 #include "../platform/platform.hpp"
 #include "../powerup/powerup.hpp"

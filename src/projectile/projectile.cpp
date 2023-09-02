@@ -1,8 +1,8 @@
 #include "projectile.hpp"
 #include "../shared/functions.hpp"
 
-Projectile::Projectile(GameTimer* timer, Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms, EntityType shot_by)
-    : RigidEntity(timer, position, floor, ceiling, platforms),
+Projectile::Projectile(Position position, List<int>* floor, List<int>* ceiling, List<Platform>* platforms, EntityType shot_by)
+    : RigidEntity(position, floor, ceiling, platforms),
       shot_by(shot_by),
       should_be_destroyed(false) {}
 

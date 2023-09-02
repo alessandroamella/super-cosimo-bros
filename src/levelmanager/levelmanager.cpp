@@ -7,11 +7,10 @@
 #include "../shared/functions.hpp"
 #include "../shared/settings.hpp"
 
-LevelManager::LevelManager(List<Room*>* rooms, GameTimer* game_timer)
+LevelManager::LevelManager(List<Room*>* rooms)
     : cur_visited_room_index(0),
       visited_rooms(),  // chiama in automatico il costruttore di List di default
       rooms(rooms),
-      game_timer(game_timer),
       should_load_new_room(false),
       should_load_prev_room(false) {
 }
@@ -66,7 +65,7 @@ void LevelManager::place_enemies_randomly(int enemy_count, int start_padding) {
 
         // throw std::runtime_error("x=" + std::to_string(x) + " platform_y=" + std::to_string(platform_y) + " y=" + std::to_string(y));
 
-        Enemy enemy(game_timer, (Position){x, y}, &get_cur_room()->get_floor(), &get_cur_room()->get_ceiling(), &get_cur_room()->get_platforms());
+        Enemy enemy((Position){x, y}, &get_cur_room()->get_floor(), &get_cur_room()->get_ceiling(), &get_cur_room()->get_platforms());
 
         get_cur_room()->add_enemy(enemy);
     }

@@ -4,13 +4,11 @@
 
 #include "../shared/functions.hpp"
 
-RigidEntity::RigidEntity(GameTimer* timer,
-                         Position position,
+RigidEntity::RigidEntity(Position position,
                          List<int>* floor,
                          List<int>* ceiling,
                          List<Platform>* platforms)
     : StaticEntity(position),
-      game_timer(timer),
       starting_position(position),
       last_position(position),
       vel_x(RIGIDBODY_STARTING_VEL_X),
