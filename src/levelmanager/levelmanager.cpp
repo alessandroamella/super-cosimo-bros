@@ -53,6 +53,18 @@ bool LevelManager::is_first_room() {
 void LevelManager::place_enemies_randomly(int enemy_count, int start_padding) {
     List<int> x_positions = pick_random_points(enemy_count, 1 + start_padding, get_cur_room()->get_width() - 1);
 
+    bool is_near_start = false;
+    int tries = 0;
+    do {
+        tries++;
+        for (int i = 0; i < x_positions.length(); i++) {
+            auto start_region = get_cur_room()->get_start_region();
+            if (is_in(x_positions.at(i), start_region.get_position().x - 2, start_region.get_ur().x + 7)) {
+                is_near_start = true;
+            }
+        }
+    } while (is_near_start && tries < ENEMY_SPAWN_TRIES);
+
     for (int i = 0; i < enemy_count; i++) {
         int x = x_positions.at(i);
         Platform* platform_at_x = get_cur_room()->get_platform_at(x);

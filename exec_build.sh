@@ -1,0 +1,1 @@
+zip -r progetto.zip CMakeLists.txt src README.md recording.mp4 build/GaetanoBros
